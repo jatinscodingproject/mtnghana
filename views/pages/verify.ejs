@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include("../includes/header") %>
+
+        <style>
+            body {
+                background: linear-gradient(135deg, #0a0a0a, #1a0f0f, #000000, #1a0f0f);
+                background-size: 300% 300%;
+                animation: bgMove 10s ease infinite;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                font-family: Arial, sans-serif;
+            }
+            
+            @keyframes bgMove {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+            
+            .otp-box {
+                background: rgba(0, 0, 0, 0.55);
+                border: 1px solid rgba(228, 119, 18, 0.4);
+                border-radius: 18px;
+                padding: 2rem;
+                width: 100%;
+                max-width: 420px;
+                text-align: center;
+                box-shadow: 0 0 20px rgba(228, 119, 18, 0.5);
+                backdrop-filter: blur(10px);
+            }
+            
+            h2 {
+                color: #ff6b00;
+                margin-bottom: 20px;
+            }
+            
+            .otp-inputs {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
+            
+            .otp-inputs input {
+                width: 55px;
+                height: 55px;
+                font-size: 28px;
+                text-align: center;
+                border-radius: 10px;
+                border: 1px solid rgba(227, 139, 24, 0.5);
+                background: rgba(255, 255, 255, 0.15);
+                color: white;
+                outline: none;
+                transition: 0.3s;
+            }
+            
+            .otp-inputs input:focus {
+                border-color: #ff6b00;
+                box-shadow: 0 0 10px rgba(255, 107, 0, 0.8);
+            }
+            
+            .verify-btn {
+                margin-top: 25px;
+                width: 100%;
+                background: #ff6b00;
+                padding: 12px;
+                border-radius: 12px;
+                border: none;
+                font-size: 1.2rem;
+                color: white;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+            
+            .verify-btn:hover {
+                background: #e44607;
+                box-shadow: 0 0 15px rgba(251, 96, 13, 0.8);
+            }
+            
+            .resend-btn {
+                margin-top: 15px;
+                background: none;
+                border: none;
+                color: #ff6b00;
+                cursor: pointer;
+                font-size: 1rem;
+                text-decoration: underline;
+            }
+            
+            .resend-btn:hover {
+                color: #ffa044;
+            }
+        </style>
+</head>
+
+<body>
+
+    <div class="otp-box">
+        <span class="text-white font-bold text-4xl">Arena</span>
+        <span class="text-orange-500 font-bold text-4xl">Xpro</span>
+
+        <h2 class="mt-10 text-3xl font-bold mb-6">Verify OTP</h2>
+
+        <div class="alert alert-success text-white mb-4">
+            OTP successfully sent to <strong><%= msisdn %></strong>.
+        </div>
+
+        <div class="alert alert-success text-white mb-4">
+            After Entering the Otp Will charge <strong><%= planAmount %>GHS</strong> <strong><%= sub_type %></strong>.
+        </div>
+
+        <p class="text-white mb-3">OTP Prefix: <strong><%= prefix %></strong></p>
+
+        <form action="/verify-otp" method="POST" id="otpForm">
+            <input type="hidden" name="invoice" value="<%= invoice %>">
+            <input type="hidden" name="request" value="<%= request %>">
+            <input type="hidden" name="prefix" value="<%= prefix %>">
+            <input type="hidden" name="msisdn" value="<%= msisdn %>">
+
+            <div class="otp-inputs">
+                <input type="text" maxlength="1" name="otp1" class="otp-field" required>
+                <input type="text" maxlength="1" name="otp2" class="otp-field" required>
+                <input type="text" maxlength="1" name="otp3" class="otp-field" required>
+                <input type="text" maxlength="1" name="otp4" class="otp-field" required>
+            </div>
+
+            <button type="submit" class="verify-btn">Verify OTP</button>
+        </form>
+
+        <form action="/resend-otp" method="POST">
+            <input type="hidden" name="msisdn" value="<%= msisdn %>">
+            <button type="submit" class="resend-btn">Resend OTP</button>
+        </form>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll(".otp-field");
+
+        inputs.forEach((input, index) => {
+            input.addEventListener("input", () => {
+                input.value = input.value.replace(/[^0-9]/g, "");
+                if (input.value && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && index > 0 && !input.value) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>

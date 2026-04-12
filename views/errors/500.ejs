@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>404 - Page Not Found | ArenaXpro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a, #1a0f0f, #000000, #1a0f0f);
+            background-size: 300% 300%;
+            animation: bgMove 12s ease infinite;
+        }
+        
+        @keyframes bgMove {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center text-center">
+
+    <div>
+        <h1 class="text-8xl font-extrabold text-orange-500 drop-shadow-lg">500</h1>
+        <p class="text-gray-300 text-2xl mt-4">Oops! The page you're looking for doesn’t exist.</p>
+
+        <a href="/" class="mt-8 inline-block bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg text-lg font-bold shadow-lg transition">
+            Go Back Home
+        </a>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <%- include("../includes/header") %>
+
+        <style>
+            body {
+                background: linear-gradient(135deg, #0a0a0a, #1a0f0f, #000000, #1a0f0f);
+                background-size: 300% 300%;
+                animation: bgMove 12s ease infinite;
+            }
+            
+            @keyframes bgMove {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+            
+            .login-box {
+                background: rgba(0, 0, 0, 0.55);
+                border: 1px solid rgba(228, 119, 18, 0.4);
+                border-radius: 18px;
+                padding: 2.5rem;
+                width: 100%;
+                max-width: 420px;
+                box-shadow: 0 0 20px rgba(228, 119, 18, 0.5);
+                backdrop-filter: blur(10px);
+                animation: fadeIn 1s ease-in-out;
+            }
+            
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .login-input,
+            .login-select {
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(227, 139, 24, 0.3);
+                color: white;
+                padding: .8rem;
+                border-radius: 10px;
+                width: 100%;
+            }
+            
+            .login-input:focus,
+            .login-select:focus {
+                border-color: #ff6b00;
+                box-shadow: 0 0 10px rgba(235, 105, 12, 0.6);
+            }
+            
+            .login-button {
+                background: #ff6b00;
+                border-radius: 12px;
+                padding: .8rem;
+                width: 100%;
+                font-size: 1.1rem;
+                font-weight: bold;
+                transition: 0.3s;
+            }
+            
+            .login-button:hover {
+                background: #e44607;
+                box-shadow: 0 0 15px rgba(251, 96, 13, 0.8);
+            }
+            
+            .select-box {
+                position: relative;
+                width: 100%;
+            }
+            
+            .select-box select {
+                width: 100%;
+                padding: .8rem;
+                padding-right: 2.5rem;
+                background: rgba(255, 255, 255, 0.07);
+                border: 1px solid rgba(227, 139, 24, 0.3);
+                border-radius: 10px;
+                color: white;
+                font-size: 1rem;
+                appearance: none;
+                outline: none;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+            
+            .select-icon {
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                pointer-events: none;
+                transition: 0.3s ease;
+            }
+        </style>
+
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="login-box text-center">
+
+        <span class="text-white font-bold text-4xl">Arena</span>
+        <span class="text-orange-500 font-bold text-4xl">Xpro</span>
+
+        <h2 class="mt-10 text-3xl font-bold mb-6 text-[#ff6b00]">Create Your Account</h2>
+        <div id="priceAlert" class="hidden mb-6 px-4 py-3 rounded-lg text-white text-center" style="background: rgba(255, 107, 0, 0.25); border: 1px solid #ff6b00; backdrop-filter: blur(6px);">
+        </div>
+
+        <form id="registerForm" action="/register" method="POST" class="space-y-5">
+            <div>
+                <input type="text" placeholder="Full Name" name="name" class="login-input" value="<%= old?.name || '' %>">
+                <p class="text-start error-text text-red-400 text-sm mt-1" id="nameError"></p>
+            </div>
+
+            <div>
+                <input type="text" placeholder="Phone Number" name="msisdn" class="login-input" value="<%= old?.msisdn || '' %>">
+                <p class="text-start error-text text-red-400 text-sm mt-1" id="msisdnError"></p>
+            </div>
+
+            <div class="select-box">
+                <select name="subscription_type">
+                    <option value="" disabled <%= !old?.subscription_type ? 'selected' : '' %>> Select Subscription Type </option>
+                    <option class="text-black" value="daily"   <%= old?.subscription_type === 'daily' ? 'selected' : '' %>>Daily :- 1.7GHS</option>
+                    <option class="text-black" value="weekly"  <%= old?.subscription_type === 'weekly' ? 'selected' : '' %>>Weekly :- 10GHS</option>
+                    <option class="text-black" value="monthly" <%= old?.subscription_type === 'monthly' ? 'selected' : '' %>>Monthly :- 35GHS</option>
+                </select>
+                <svg class="select-icon" width="20" height="20" viewBox="0 0 24 24"><path fill="#ff6b00" d="M7 10l5 5l5-5H7z"/></svg>
+                <p class="text-start error-text text-red-400 text-sm mt-1" id="subscriptionError"></p>
+            </div>
+
+            <div class="select-box">
+                <select name="channel">
+                    <option value="" disabled <%= !old?.channel ? 'selected' : '' %>> Select Channel </option>
+                    <option class="text-black" value="mtn_gh_rec"       <%= old?.channel === 'mtn_gh_rec' ? 'selected' : '' %>>MTN Ghana</option>
+                    <option class="text-black" value="vodafone_gh_rec"  <%= old?.channel === 'vodafone_gh_rec' ? 'selected' : '' %>>Telecel Ghana</option>
+                </select>
+                <svg class="select-icon" width="20" height="20" viewBox="0 0 24 24"><path fill="#ff6b00" d="M7 10l5 5l5-5H7z"/></svg>
+
+                <p class="text-start error-text text-red-400 text-sm mt-1" id="channelError"></p>
+            </div>
+            <button type="submit" class="login-button">Register</button>
+        </form>
+
+
+        <p class="mt-6 text-gray-300">
+            Already have an account?
+            <a href="/login" class="text-orange-400 font-semibold hover:underline">Login here</a>
+        </p>
+
+    </div>
+
+    <% if (error) { %>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const toast = document.createElement("div");
+                toast.textContent = "<%= error %>";
+                toast.style.position = "fixed";
+                toast.style.top = "20px";
+                toast.style.right = "20px";
+                toast.style.background = "rgba(255, 77, 77, 0.9)";
+                toast.style.color = "white";
+                toast.style.padding = "15px 20px";
+                toast.style.borderRadius = "8px";
+                toast.style.boxShadow = "0 0 10px rgba(255, 0, 0, 0.4)";
+                toast.style.zIndex = "9999";
+                toast.style.fontSize = "1rem";
+
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.transition = "opacity 0.5s";
+                    toast.style.opacity = "0";
+                    setTimeout(() => toast.remove(), 500);
+                }, 3000);
+            });
+        </script>
+        <% } %>
+
+            <script>
+                document.getElementById("registerForm").addEventListener("submit", function(e) {
+                    let hasError = false;
+                    document.querySelectorAll(".error-text").forEach(el => el.textContent = "");
+                    const name = document.querySelector("input[name='name']").value.trim();
+                    const msisdn = document.querySelector("input[name='msisdn']").value.trim();
+                    const subscription = document.querySelector("select[name='subscription_type']").value;
+                    const channel = document.querySelector("select[name='channel']").value;
+
+                    if (!name) {
+                        document.getElementById("nameError").textContent = "Full name is required";
+                        hasError = true;
+                    }
+
+                    if (!msisdn) {
+                        document.getElementById("msisdnError").textContent = "Phone number is required";
+                        hasError = true;
+                    } else if (!/^\d{10,15}$/.test(msisdn)) {
+                        document.getElementById("msisdnError").textContent = "Enter a valid phone number (10–15 digits)";
+                        hasError = true;
+                    }
+
+                    if (!subscription) {
+                        document.getElementById("subscriptionError").textContent = "Select a subscription type";
+                        hasError = true;
+                    }
+
+                    if (!channel) {
+                        document.getElementById("channelError").textContent = "Select a channel";
+                        hasError = true;
+                    }
+
+                    if (hasError) {
+                        e.preventDefault();
+                        return;
+                    }
+                });
+            </script>
+
+            <script>
+                const priceAlert = document.getElementById("priceAlert");
+                const subscriptionSelect = document.querySelector("select[name='subscription_type']");
+
+                subscriptionSelect.addEventListener("change", function() {
+                    let priceText = "";
+                    if (this.value === "daily") {
+                        priceText = "Daily Subscription Charge: 1.7 GHS";
+                    } else if (this.value === "weekly") {
+                        priceText = "Weekly Subscription Charge: 10 GHS";
+                    } else if (this.value === "monthly") {
+                        priceText = "Monthly Subscription Charge: 35 GHS";
+                    }
+
+                    priceAlert.textContent = priceText;
+                    priceAlert.classList.remove("hidden");
+
+                    // Optional: fade out after 5 seconds
+                    setTimeout(() => {
+                        priceAlert.style.transition = "opacity .6s";
+                        priceAlert.style.opacity = "0";
+                        setTimeout(() => {
+                            priceAlert.classList.add("hidden");
+                            priceAlert.style.opacity = "1";
+                        }, 600);
+                    }, 5000);
+                });
+            </script>
+
+</body>
+
+</html>

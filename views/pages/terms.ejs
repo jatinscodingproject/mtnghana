@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include("../includes/header") %>
+
+        <style>
+            body {
+                background: linear-gradient(135deg, #0a0a0a, #1a0a0a, #000000, #1a0a0a);
+                background-size: 300% 300%;
+                animation: bgMove 12s ease infinite;
+                min-height: 100vh;
+                padding-top: 110px;
+                padding-left: 20px;
+                padding-right: 20px;
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+            
+            @keyframes bgMove {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+            
+            .terms-box {
+                background: rgba(0, 0, 0, 0.55);
+                border: 1px solid rgba(228, 119, 18, 0.4);
+                border-radius: 18px;
+                padding: 2.3rem;
+                width: 100%;
+                max-width: 850px;
+                color: white;
+                box-shadow: 0 0 25px rgba(228, 119, 18, 0.4);
+                backdrop-filter: blur(10px);
+                margin: 0 auto 50px auto;
+            }
+            
+            h1,
+            h2 {
+                color: #ff6b00;
+                margin-bottom: 12px;
+            }
+            
+            p,
+            li {
+                line-height: 1.6;
+                margin-bottom: 10px;
+                color: #e1e1e1;
+            }
+            
+            ul {
+                padding-left: 20px;
+            }
+        </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-sm border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+
+            <!-- Logo -->
+            <a href="/" class="flex items-center">
+                <span class="text-white font-bold text-2xl">arena</span>
+                <span class="text-orange-500 font-bold text-2xl">X</span>
+                <span class="text-orange-500 font-bold text-2xl">pro</span>
+            </a>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-white focus:outline-none" id="mobileBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="/" class="text-white hover:text-[#ff6b00] transition">Home</a>
+                <a href="/#casual-games" class="text-white hover:text-[#ff6b00] transition">Casual Games</a>
+                <a href="/faq" class="text-white hover:text-[#ff6b00] transition">Help</a>
+                <a href="/terms" class="text-white hover:text-[#ff6b00] transition">Terms</a>
+                <a href="/privacy" class="text-white hover:text-[#ff6b00] transition">Privacy</a>
+
+                <button id="loginBtn" onclick="window.location.href='/login'" class="px-4 py-2 bg-orange-600 text-white rounded-lg">
+                        Login
+                    </button>
+                <div id="accountDropdown" class="hidden flex-col gap-2 relative">
+                    <button class="px-4 py-2 bg-gray-700 text-white rounded-lg">
+                            My Account ▾
+                        </button>
+
+                    <div class="absolute mt-2 bg-gray-800 text-white rounded-lg shadow-lg p-3 w-40 hidden" id="dropdownMenu">
+                        <button onclick="goToAccount()" class="w-full text-left py-2 hover:text-orange-400">My Account</button>
+                        <button onclick="logoutUser()" class="w-full text-left py-2 hover:text-orange-400">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobileMenu" class="hidden md:hidden bg-black/70 backdrop-blur-md border-t border-white/10">
+            <div class="flex flex-col text-white p-4 space-y-3">
+
+                <a href="/" class="hover:text-[#ff6b00]">Home</a>
+                <a href="/#casual-games" class="hover:text-[#ff6b00]">Casual Games</a>
+                <a href="/faq" class="hover:text-[#ff6b00]">Help</a>
+                <a href="/terms" class="hover:text-[#ff6b00]">Terms & Conditions</a>
+                <a href="/privacy" class="hover:text-[#ff6b00]">Privacy Policy</a>
+
+                <button id="mobileLoginBtn" onclick="window.location.href='/login'" class="mt-2 px-4 py-2 bg-orange-600 rounded-lg">
+                        Login
+                    </button>
+
+                <div id="mobileAccountBox" class="hidden flex flex-col gap-2 mt-3">
+                    <button onclick="goToAccount()" class="w-full text-left py-2 hover:text-orange-400">
+                            My Account
+                        </button>
+                    <button onclick="logoutUser()" class="mt-2 px-4 py-2 bg-orange-600 rounded-lg">
+                            Logout
+                        </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="terms-box">
+        <div class="text-center mb-6">
+            <span class="text-white font-bold text-4xl">Arena</span>
+            <span class="text-orange-500 font-bold text-4xl">Xpro</span>
+        </div>
+
+        <h1 class="text-xl font-bold mb-4">Terms & Conditions</h1>
+
+        <p>These Terms and Conditions govern the use and sale of services and products offered by Arbees World powered by Game Centric (“ArenaXPro”). By accessing or using our services, including purchasing or subscribing, you agree to be bound by these
+            Terms.
+        </p>
+
+        <h2>1. General Provisions</h2>
+        <p><strong>1.1 Eligibility:</strong> You must be of legal age or have guardian consent.</p>
+        <p><strong>1.2 Acceptance:</strong> Using ArenaXPro indicates acceptance of these Terms and the Privacy Policy.</p>
+
+        <h2>2. Services & Products</h2>
+        <p><strong>2.1 Description:</strong> ArenaXPro offers digital content, games, virtual items, and premium features.</p>
+        <p><strong>2.2 Availability:</strong> Varies by region and subscription type.</p>
+        <p><strong>2.3 Pricing:</strong> Prices may change without notice.</p>
+
+        <h2>3. Payments & Billing</h2>
+        <p><strong>3.1 Methods:</strong> Daily, weekly, and monthly billing via Mobile Money & Airtime.</p>
+        <p><strong>3.2 Authorization:</strong> You authorize recurring charges.</p>
+        <p><strong>3.3 Recurring Payments:</strong> Auto-renew until cancelled.</p>
+
+        <h2>Refund Policy</h2>
+        <p><strong>3.4 Eligibility:</strong> Unauthorized purchases, duplicates, validated issues.</p>
+        <p><strong>3.4.2 Window:</strong> Refund requests must be submitted within 3 days.</p>
+        <p><strong>3.4.3 Valid Reasons:</strong> Fraudulent charges, duplicates, etc.</p>
+        <p><strong>3.4.5 Non-refundable:</strong> Change of mind, expired subscription, excessive usage.</p>
+
+        <h2>4. Intellectual Property</h2>
+        <p>ArenaXPro owns all copyrights, trademarks, and digital assets.</p>
+
+        <h2>5. Prohibited Conduct</h2>
+        <ul>
+            <li>Hacking, cheating, exploiting bugs</li>
+            <li>Harassment or abusive behavior</li>
+            <li>Sharing login details</li>
+        </ul>
+
+        <h2>6. Termination</h2>
+        <p>Accounts may be terminated for violations, fraud, or misuse.</p>
+
+        <h2>7. Disclaimer of Warranties</h2>
+        <p>ArenaXPro is provided “as-is” with no guarantees or warranties.</p>
+
+        <h2>8. Limitation of Liability</h2>
+        <p>No liability for indirect or consequential damages.</p>
+
+        <h2>9. Governing Law</h2>
+        <p>Jurisdiction: UAE, South Africa, Ghana, and regions where ArenaXPro operates.</p>
+
+        <h2>10. Payment Eligibility</h2>
+        <p>Must be 18+ or have verified guardian approval.</p>
+
+        <h2>11. General Terms</h2>
+        <p>Users must download required games and are responsible for data usage costs.</p>
+
+        <h2>12. Age Restrictions</h2>
+        <p>Users must comply with content age guidelines.</p>
+
+        <h2>13. Modification of Terms</h2>
+        <p>Terms may be updated anytime; continued use indicates acceptance.</p>
+
+        <h2>14. Suspension or Termination</h2>
+        <p>No refunds for suspended or banned accounts.</p>
+
+        <h2>15. Liability Summary</h2>
+        <p>No responsibility for outages, decisions based on content, or misuse.</p>
+
+        <h2>16. Indemnification</h2>
+        <p>Users must indemnify ArenaXPro for violations or misuse.</p>
+
+        <h2>17. Community Rules</h2>
+        <p>No harmful, offensive, or spam content allowed.</p>
+
+        <h2>18. User Conduct</h2>
+        <ul>
+            <li>No illegal activities</li>
+            <li>No hacking or disruption</li>
+            <li>No sharing credentials</li>
+        </ul>
+
+        <h2>19. Platform Availability</h2>
+        <p>Downtime may occur due to maintenance or technical reasons.</p>
+
+        <h2>20. Subscription & Registration</h2>
+        <p>Subscriptions are non-transferable and require accurate information.</p>
+
+        <h2>21. Billing</h2>
+        <p>Mobile Money billing, advance payments, and tax-inclusive charges apply.</p>
+
+        <h2>22. Renewal & Cancellation</h2>
+        <p>Subscriptions auto-renew unless cancelled before billing date.</p>
+
+
+        <h2>23. Free Service </h2>
+        <p>The Esports is free accessible for free access you have to visit
+            <a href="https://arenaxpro.gamecentric.io/login">https://arenaxpro.gamecentric.io/login</a>.</p>
+
+        <br><br>
+    </div>
+
+    <footer class="bg-black border-t border-gray-800 py-12 px-4 mt-10 ">
+        <div class="max-w-7xl mx-auto ">
+
+            <div class="flex justify-center mb-8 ">
+                <span class="text-5xl font-bold text-white ">Arena</span>
+                <span class="text-5xl font-bold text-orange-500 ">Xpro</span>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-400 ">
+                © <span id="currentYear "></span> arena<span style="color:#ff6b00; ">Xpro</span>. All rights reserved. Made for gamer lovers worldwide.
+            </div>
+
+        </div>
+    </footer>
+
+    <script>
+        // Set Current Year
+        document.getElementById("currentYear ").textContent = new Date().getFullYear();
+    </script>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        const mobileBtn = document.getElementById("mobileBtn ");
+        const mobileMenu = document.getElementById("mobileMenu ");
+
+        mobileBtn.addEventListener("click ", () => {
+            mobileMenu.classList.toggle("hidden ");
+        });
+
+        document.addEventListener("click ", (e) => {
+            if (!mobileBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add("hidden ");
+            }
+        });
+    </script>
+
+</body>
+
+</html>

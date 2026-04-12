@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include("../includes/header") %>
+
+        <style>
+            body {
+                background: linear-gradient(135deg, #0a0a0a, #1a0a0a, #000000, #1a0a0a);
+                background-size: 300% 300%;
+                animation: bgMove 12s ease infinite;
+                min-height: 100vh;
+                padding-top: 100px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+            
+            @keyframes bgMove {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+            
+            .terms-box {
+                background: rgba(0, 0, 0, 0.55);
+                border: 1px solid rgba(228, 119, 18, 0.4);
+                border-radius: 18px;
+                padding: 2.3rem;
+                width: 100%;
+                max-width: 850px;
+                color: white;
+                box-shadow: 0 0 25px rgba(228, 119, 18, 0.4);
+                backdrop-filter: blur(10px);
+                margin: 0 auto 50px auto;
+            }
+            
+            h1,
+            h2 {
+                color: #ff6b00;
+                margin-bottom: 12px;
+            }
+            
+            p,
+            li {
+                line-height: 1.6;
+                margin-bottom: 10px;
+                color: #e1e1e1;
+            }
+            
+            ul {
+                padding-left: 20px;
+            }
+        </style>
+</head>
+
+<body>
+
+    <nav class="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-sm border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center">
+                <span class="text-white font-bold text-2xl">arena</span>
+                <span class="text-orange-500 font-bold text-2xl">X</span>
+                <span class="text-orange-500 font-bold text-2xl">pro</span>
+            </a>
+            <button class="md:hidden text-white focus:outline-none" id="mobileBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="/" class="text-white hover:text-[#ff6b00] transition">Home</a>
+                <a href="/#casual-games" class="text-white hover:text-[#ff6b00] transition">Casual Games</a>
+                <a href="/faq" class="text-white hover:text-[#ff6b00] transition">Help</a>
+                <a href="/terms" class="text-white hover:text-[#ff6b00] transition">Terms</a>
+                <a href="/privacy" class="text-white hover:text-[#ff6b00] transition">Privacy</a>
+
+                <button id="loginBtn" onclick="window.location.href='/login'" class="px-4 py-2 bg-orange-600 text-white rounded-lg">
+                        Login
+                    </button>
+                <div id="accountDropdown" class="hidden flex-col gap-2 relative">
+                    <button class="px-4 py-2 bg-gray-700 text-white rounded-lg">
+                            My Account ▾
+                        </button>
+
+                    <div class="absolute mt-2 bg-gray-800 text-white rounded-lg shadow-lg p-3 w-40 hidden" id="dropdownMenu">
+                        <button onclick="goToAccount()" class="w-full text-left py-2 hover:text-orange-400">My Account</button>
+                        <button onclick="logoutUser()" class="w-full text-left py-2 hover:text-orange-400">Logout</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="mobileMenu" class="hidden md:hidden bg-black/70 backdrop-blur-md border-t border-white/10">
+            <div class="flex flex-col text-white p-4 space-y-3">
+
+                <a href="#home" class="hover:text-[#ff6b00]">Home</a>
+                <a href="#casual-games" class="hover:text-[#ff6b00]">Casual Games</a>
+                <a href="/faq" class="hover:text-[#ff6b00]">Help</a>
+                <a href="/terms" class="hover:text-[#ff6b00]">Terms & Conditions</a>
+                <a href="/privacy" class="hover:text-[#ff6b00]">Privacy Policy</a>
+
+                <button id="mobileLoginBtn" onclick="window.location.href='/login'" class="mt-2 px-4 py-2 bg-orange-600 rounded-lg">
+                        Login
+                    </button>
+
+                <div id="mobileAccountBox" class="hidden flex flex-col gap-2 mt-3">
+                    <button onclick="goToAccount()" class="w-full text-left py-2 hover:text-orange-400">
+                            My Account
+                        </button>
+                    <button onclick="logoutUser()" class="mt-2 px-4 py-2 bg-orange-600 rounded-lg">
+                            Logout
+                        </button>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="max-w-6xl mx-auto px-4 py-6">
+
+        <h2 class="text-2xl font-bold text-orange-500 mb-4">
+            My Subscriptions
+        </h2>
+
+        <% if (subscriptions.length === 0) { %>
+            <p class="text-gray-300">No subscriptions found.</p>
+            <% } else { %>
+
+                <div class="hidden md:block overflow-x-auto">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-white border border-gray-700">
+                            <thead class="bg-black/60">
+                                <tr>
+                                    <th class="p-3 text-left border">Invoice ID</th>
+                                    <th class="p-3 border">Order ID</th>
+                                    <th class="p-3 border">Amount</th>
+                                    <th class="p-3 border">Charges</th>
+                                    <th class="p-3 border">Amount Charged</th>
+                                    <th class="p-3 border">Final Amount</th>
+                                    <th class="p-3 border">Subscription Status</th>
+                                    <th class="p-3 border">Transaction ID</th>
+                                    <th class="p-3 border">Order Date</th>
+                                    <th class="p-3 border">Mobile</th>
+                                    <th class="p-3 border">Message</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <% subscriptions.forEach(sub => { %>
+                                    <tr class="border-t border-gray-700 hover:bg-black/40 transition">
+                                        <td class="p-3 break-all border">
+                                            <%= sub.invoice_id %>
+                                        </td>
+                                        <td class="p-3 break-all border">
+                                            <%= sub.order_id || '-' %>
+                                        </td>
+
+                                        <td class="p-3 border">
+                                            <%= sub.amount ?? 0 %> GHS
+                                        </td>
+                                        <td class="p-3 border">
+                                            <%= sub.charges ?? 0 %> GHS
+                                        </td>
+                                        <td class="p-3 border">
+                                            <%= sub.amount_charged ?? 0 %> GHS
+                                        </td>
+                                        <td class="p-3 border">
+                                            <%= sub.amount_after_charges ?? 0 %> GHS
+                                        </td>
+
+                                        <td class="p-3 text-orange-400 font-semibold border">
+                                            <%= sub.sub_status || 'N/A' %>
+                                        </td>
+
+                                        <td class="p-3 break-all border">
+                                            <%= sub.transaction_id || sub.external_transaction_id || '-' %>
+                                        </td>
+
+                                        <td class="p-3 border">
+                                            <%= sub.order_date ? sub.order_date.toDateString() : '-' %>
+                                        </td>
+
+                                        <td class="p-3 border">
+                                            <%= sub.customer_mobile_number || '-' %>
+                                        </td>
+
+                                        <td class="p-3 max-w-xs truncate border" title="<%= sub.message %>">
+                                            <%= sub.message || '-' %>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="md:hidden space-y-4">
+                    <% subscriptions.forEach(sub => { %>
+                        <div class="bg-black/50 border border-orange-500/40 rounded-lg p-4 space-y-1 text-sm">
+
+                            <p><b>Invoice ID:</b>
+                                <%= sub.invoice_id %>
+                            </p>
+                            <p><b>Order ID:</b>
+                                <%= sub.order_id || '-' %>
+                            </p>
+
+                            <p><b>Amount:</b>
+                                <%= sub.amount ?? 0 %> GHS</p>
+                            <p><b>Charges:</b>
+                                <%= sub.charges ?? 0 %> GHS</p>
+                            <p><b>Amount Charged:</b>
+                                <%= sub.amount_charged ?? 0 %> GHS</p>
+                            <p><b>Final Amount:</b>
+                                <%= sub.amount_after_charges ?? 0 %> GHS</p>
+
+                            <p>
+                                <b>Status:</b>
+                                <span class="text-orange-400 font-semibold">
+                    <%= sub.sub_status || 'N/A' %>
+                </span>
+                            </p>
+
+                            <p><b>Transaction ID:</b>
+                                <span class="break-all">
+                    <%= sub.transaction_id || sub.external_transaction_id || '-' %>
+                </span>
+                            </p>
+
+                            <p><b>Order Date:</b>
+                                <%= sub.order_date ? sub.order_date.toDateString() : '-' %>
+                            </p>
+
+                            <p><b>Mobile:</b>
+                                <%= sub.customer_mobile_number || '-' %>
+                            </p>
+
+                            <p>
+                                <b>Message:</b>
+                                <span class="block text-gray-300 break-words">
+                    <%= sub.message || '-' %>
+                </span>
+                            </p>
+
+                        </div>
+                        <% }) %>
+                </div>
+
+
+                <% } %>
+
+                    <div class="flex justify-center gap-2 mt-6">
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <a href="?page=<%= i %>" class="px-3 py-1 rounded 
+                <%= i === currentPage ? 'bg-orange-600' : 'bg-gray-700' %>">
+                                <%= i %>
+                            </a>
+                            <% } %>
+                    </div>
+    </div>
+
+
+    <footer class="bg-black border-t border-gray-800 py-12 px-4 mt-10">
+        <div class="max-w-7xl mx-auto">
+
+            <div class="flex justify-center mb-8">
+                <span class="text-5xl font-bold text-white">Arena</span>
+                <span class="text-5xl font-bold text-orange-500">Xpro</span>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+                © <span id="currentYear"></span> arena<span style="color:#ff6b00;">Xpro</span>. All rights reserved. Made for gamer lovers worldwide.
+            </div>
+
+        </div>
+    </footer>
+    <script>
+        document.getElementById("currentYear").textContent = new Date().getFullYear();
+
+        const mobileBtn = document.getElementById("mobileBtn");
+        const mobileMenu = document.getElementById("mobileMenu");
+
+        mobileBtn.addEventListener("click", () => {
+            mobileMenu.classList.toggle("hidden");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!mobileBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add("hidden");
+            }
+        });
+    </script>
+</body>
+
+</html>

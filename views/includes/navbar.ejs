@@ -1,0 +1,62 @@
+<nav class="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-sm border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/" class="flex items-center">
+            <span class="text-white font-bold text-2xl">arena</span>
+            <span class="text-orange-500 font-bold text-2xl">X</span>
+            <span class="text-orange-500 font-bold text-2xl">pro</span>
+        </a>
+        <button class="md:hidden text-white focus:outline-none" id="mobileBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+        <div class="hidden md:flex items-center space-x-8">
+            <a href="/" class="text-white hover:text-[#ff6b00] transition">Home</a>
+            <a href="/#casual-games" class="text-white hover:text-[#ff6b00] transition">Casual Games</a>
+            <a href="/faq" class="text-white hover:text-[#ff6b00] transition">Help</a>
+            <a href="/terms" class="text-white hover:text-[#ff6b00] transition">Terms</a>
+            <a href="/privacy" class="text-white hover:text-[#ff6b00] transition">Privacy</a>
+
+            <button id="loginBtn" onclick="window.location.href='/login'" class="px-4 py-2 bg-orange-600 text-white rounded-lg">
+                        Login
+                    </button>
+            <div id="accountDropdown" class="hidden flex-col gap-2 relative">
+                <button class="px-4 py-2 bg-gray-700 text-white rounded-lg">
+                            My Account ▾
+                        </button>
+
+                <div class="absolute mt-2 bg-gray-800 text-white rounded-lg shadow-lg p-3 w-40 hidden" id="dropdownMenu">
+                    <button onclick="goToAccount()" class="w-full text-left py-2 hover:text-orange-400">My Account</button>
+                    <button onclick="logoutUser()" class="w-full text-left py-2 hover:text-orange-400">Logout</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="mobileMenu" class="hidden md:hidden bg-black/70 backdrop-blur-md border-t border-white/10">
+        <div class="flex flex-col text-white p-4 space-y-3">
+
+            <a href="#home" class="hover:text-[#ff6b00]">Home</a>
+            <a href="#casual-games" class="hover:text-[#ff6b00]">Casual Games</a>
+            <a href="/faq" class="hover:text-[#ff6b00]">Help</a>
+            <a href="/terms" class="hover:text-[#ff6b00]">Terms & Conditions</a>
+            <a href="/privacy" class="hover:text-[#ff6b00]">Privacy Policy</a>
+
+            <button id="mobileLoginBtn" onclick="window.location.href='/login'" class="mt-2 px-4 py-2 bg-orange-600 rounded-lg">
+                        Login
+                    </button>
+
+            <div id="mobileAccountBox" class="hidden flex flex-col gap-2 mt-3">
+                <button onclick="goToAccount()" class="w-full text-left py-2 hover:text-orange-400">
+                            My Account
+                        </button>
+                <button onclick="logoutUser()" class="mt-2 px-4 py-2 bg-orange-600 rounded-lg">
+                            Logout
+                        </button>
+            </div>
+
+        </div>
+    </div>
+</nav>

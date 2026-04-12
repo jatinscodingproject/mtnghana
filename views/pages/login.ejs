@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <%- include("../includes/header") %>
+
+        <style>
+            body {
+                background: linear-gradient(135deg, #0a0a0a, #1a0f0f, #000000, #1a0f0f);
+                background-size: 300% 300%;
+                animation: bgMove 12s ease infinite;
+            }
+            
+            @keyframes bgMove {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+            
+            .login-box {
+                background: rgba(0, 0, 0, 0.55);
+                border: 1px solid rgba(228, 119, 18, 0.4);
+                border-radius: 18px;
+                padding: 2.5rem;
+                width: 100%;
+                max-width: 420px;
+                box-shadow: 0 0 20px rgba(228, 119, 18, 0.5);
+                backdrop-filter: blur(10px);
+                animation: fadeIn 1s ease-in-out;
+            }
+            
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .login-input {
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(227, 139, 24, 0.3);
+                color: white;
+                padding: .8rem;
+                border-radius: 10px;
+                width: 100%;
+            }
+            
+            .login-input:focus {
+                border-color: #ff6b00;
+                box-shadow: 0 0 10px rgba(235, 105, 12, 0.6);
+            }
+            
+            .login-button {
+                background: #ff6b00;
+                border-radius: 12px;
+                padding: .8rem;
+                width: 100%;
+                font-size: 1.1rem;
+                font-weight: bold;
+                transition: 0.3s;
+            }
+            
+            .login-button:hover {
+                background: #e44607;
+                box-shadow: 0 0 15px rgba(251, 96, 13, 0.8);
+            }
+        </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="login-box text-center">
+        <span class="text-white font-bold text-4xl">Arena</span><span class="text-orange-500 font-bold text-4xl">Xpro</span>
+        <h2 class="mt-10 text-3xl font-bold mb-6 text-[#ff6b00]">Welcome Back Gamer</h2>
+
+        <form id="loginForm" class="space-y-5">
+            <div>
+                <input type="text" placeholder="Phone Number" name="msisdn" id="msisdn" class="login-input" required>
+            </div>
+
+            <button type="submit" class="login-button">
+                Login
+            </button>
+        </form>
+        <p class="mt-6 text-gray-300">
+            create account?
+            <a href="/register" class="text-orange-400 font-semibold hover:underline">Register here</a>
+        </p>
+    </div>
+    <div id="toast" class="fixed top-5 right-5 bg-red-600 text-white px-5 py-3 rounded-lg shadow-lg hidden z-50 text-lg font-semibold">
+    </div>
+    <script>
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.classList.remove("hidden");
+
+            setTimeout(() => {
+                toast.classList.add("hidden");
+            }, 3000);
+        }
+
+        document.getElementById("loginForm").addEventListener("submit", async(e) => {
+            e.preventDefault();
+
+            const msisdn = document.getElementById("msisdn").value;
+
+            const res = await fetch("/user-login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    msisdn
+                })
+            });
+
+            const data = await res.json();
+
+            if (!data.status) {
+                showToast(data.message || "Something went wrong");
+                return;
+            }
+
+            localStorage.setItem("auth_token", data.token);
+            window.location.href = data.redirect;
+        });
+    </script>
+
+</body>
+
+
+</html>
