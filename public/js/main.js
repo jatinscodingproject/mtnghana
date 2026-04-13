@@ -178,10 +178,10 @@ async function playGame(game) {
     // const token = localStorage.getItem("auth_token");
 
     // If logged in, check subscription normally
-    if (token) {
-        const isValid = await validateTokenCheckSub();
-        if (!isValid) return;
-    }
+    // if (token) {
+    //     const isValid = await validateTokenCheckSub();
+    //     if (!isValid) return;
+    // }
 
     // FREE MODE CHECK
     // let freeData = getFreeGameData();
@@ -318,7 +318,7 @@ window.addEventListener("load", () => {
     setTimeout(() => {
         document.getElementById('loadingScreen').classList.add('hidden');
         document.getElementById('mainContent').classList.add('visible');
-        renderGamesFromServer();
+        // renderGamesFromServer();
     }, 1000);
 });
 
