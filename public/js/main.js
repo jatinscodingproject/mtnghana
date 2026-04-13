@@ -199,11 +199,11 @@ async function playGame(game) {
     gameFrame.src = `https://arenaxpro.com/games/107Games/${game}/index.html`;
 
     // ⏳ Start 2 minute timer
-    setTimeout(() => {
-        document.getElementById("gameModal").classList.add("hidden");
-        gameFrame.src = "";
-        openSubscriptionModal();
-    }, FREE_TIME_LIMIT);
+    // setTimeout(() => {
+    //     document.getElementById("gameModal").classList.add("hidden");
+    //     gameFrame.src = "";
+    //     openSubscriptionModal();
+    // }, FREE_TIME_LIMIT);
 }
 
 async function onConfigChange(config) {
