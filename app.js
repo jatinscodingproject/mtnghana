@@ -5,7 +5,7 @@ const sequelize = require("./config/db")
 const pageRoutes = require("./routes/pages");
 const authRoutes = require("./routes/auth");
 require('dotenv').config()
-require("./cron/subscriptionChecker");
+// require("./cron/subscriptionChecker");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 
