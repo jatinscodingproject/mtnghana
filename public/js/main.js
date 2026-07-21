@@ -461,6 +461,7 @@ async function subscribeNow() {
         consentUrl =
             `https://sitcg.mtn.com.gh/Portal` +
             `?OfferCode=${offerCode}` +
+            `&mobileNumber=${window.msisdn}` +
             `&redirectUrl=${redirectUrl}` +
             `&transactionID=${transactionID}`;
     }
