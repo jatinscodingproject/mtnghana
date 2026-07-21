@@ -1,5 +1,5 @@
-const Subscription = require("../models/model.subscription");
-const Visit = require("../models/model.clicks")
+
+
 
 exports.homePage = async(req, res) => {
     try {
