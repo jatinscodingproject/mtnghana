@@ -11,14 +11,6 @@ exports.homePage = async(req, res) => {
             ip = req.socket.remoteAddress;
         }
 
-        const existingIP = await Visit.findOne({
-            where: { ip },
-        });
-
-        if (!existingIP) {
-            await Visit.create({ ip });
-        }
-
         res.render("pages/index", {
             title: "Home Page",
         });
