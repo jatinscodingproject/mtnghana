@@ -434,3 +434,36 @@ async function handleHeroPlay() {
         console.error("Hero play validation failed:", err);
     }
 }
+
+async function subscribeNow() {
+    const btn = document.getElementById("subscribeBtn");
+
+    btn.disabled = true;
+    btn.innerText = "Redirecting...";
+
+    const offerCode = "9916710032";
+    const redirectUrl = encodeURIComponent("https://mobile.arenaxpro.com/activation");
+    const transactionID = Date.now();
+
+    let consentUrl;
+
+    if (window.isHE && window.msisdn) {
+        // Mobile Data (Header Enrichment)
+        consentUrl =
+            `http://20.87.33.165/Redirect` +
+            `?OfferCode=${offerCode}` +
+            `&mobileNumber=${window.msisdn}` +
+            `&redirectUrl=${redirectUrl}` +
+            `&transactionID=${transactionID}`;
+
+    } else {
+        // Wi-Fi / Non-Header Enrichment
+        consentUrl =
+            `https://sitcg.mtn.com.gh/Portal` +
+            `?OfferCode=${offerCode}` +
+            `&redirectUrl=${redirectUrl}` +
+            `&transactionID=${transactionID}`;
+    }
+
+    window.location.href = consentUrl;
+}

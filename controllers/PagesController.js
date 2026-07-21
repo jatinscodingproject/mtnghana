@@ -10,10 +10,13 @@ exports.homePage = async(req, res) => {
         } else {
             ip = req.socket.remoteAddress;
         }
-
+        const msisdn = req.headers.msisdn || null;
         res.render("pages/index", {
             title: "Home Page",
+            msisdn,
+            isHE: !!msisdn
         });
+
 
     } catch (error) {
         console.error(error);
