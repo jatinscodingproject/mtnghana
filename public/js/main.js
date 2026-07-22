@@ -444,7 +444,7 @@ async function subscribeNow() {
     }
 
     const offerCode = "9916710032";
-    const redirectUrl = encodeURIComponent("https://mobile.arenaxpro.com/redirect");
+    const redirectUrl = encodeURIComponent("http://mobile.arenaxpro.com/redirect");
     const transactionID = Date.now();
 
     let consentUrl = "";
