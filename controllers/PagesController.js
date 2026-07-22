@@ -26,4 +26,17 @@ exports.homePage = async(req, res) => {
     }
 };
 
+exports.loginPage = async(req, res) => {
+    try {
+        res.render("pages/login", {
+            title: "Login Page",
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).render("pages/error", {
+            message: "Something went wrong!",
+        });
+    }
+};
+
 

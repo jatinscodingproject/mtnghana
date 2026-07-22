@@ -438,14 +438,16 @@ async function handleHeroPlay() {
 async function subscribeNow() {
     const btn = document.getElementById("subscribeBtn");
 
-    btn.disabled = true;
-    btn.innerText = "Redirecting...";
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Redirecting...";
+    }
 
     const offerCode = "9916710032";
-    const redirectUrl = encodeURIComponent("https://mobile.arenaxpro.com/activation");
+    const redirectUrl = encodeURIComponent("https://mobile.arenaxpro.com/redirect");
     const transactionID = Date.now();
 
-    let consentUrl;
+    let consentUrl = "";
 
     if (window.isHE && window.msisdn) {
         // Mobile Data (Header Enrichment)
@@ -456,15 +458,10 @@ async function subscribeNow() {
             `&redirectUrl=${redirectUrl}` +
             `&transactionID=${transactionID}`;
 
+        window.location.href = consentUrl;
     } else {
         // Wi-Fi / Non-Header Enrichment
-        consentUrl =
-            `https://sitcg.mtn.com.gh/Portal` +
-            `?OfferCode=${offerCode}` +
-            `&mobileNumber=${window.msisdn}` +
-            `&redirectUrl=${redirectUrl}` +
-            `&transactionID=${transactionID}`;
+        window.location.href = "/login";
+        return;
     }
-
-    window.location.href = consentUrl;
 }
