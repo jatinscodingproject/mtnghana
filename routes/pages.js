@@ -29,16 +29,17 @@ const jwt = require("jsonwebtoken");
 
 router.get("/redirect", (req, res) => {
     const { mobileNumber, transactionID } = req.query;
+    console.log(req)
     console.log("req.query" , req.query)
-    if (!mobileNumber) {
-        return res.status(400).send("Mobile number is required");
-    }
+    // if (!mobileNumber) {
+    //     return res.status(400).send("Mobile number is required");
+    // }
 
     const token = jwt.sign(
-        {
-            msisdn: mobileNumber,
-            transactionID,
-        },
+        // {
+        //     // msisdn: mobileNumber,
+        //     transactionID,
+        // },
         process.env.JWT_SECRET,
         {
             expiresIn: "15m",
@@ -47,6 +48,28 @@ router.get("/redirect", (req, res) => {
     return res.redirect(
         `https://mobile.arenaxpro.com?token=${encodeURIComponent(token)}`
     );
+});
+
+router.get("/notify-callback", (req, res) => {
+    console.log(req)
+    console.log("req.query" , req.body)
+    // if (!mobileNumber) {
+    //     return res.status(400).send("Mobile number is required");
+    // }
+
+    // const token = jwt.sign(
+    //     // {
+    //     //     // msisdn: mobileNumber,
+    //     //     transactionID,
+    //     // },
+    //     process.env.JWT_SECRET,
+    //     {
+    //         expiresIn: "15m",
+    //     }
+    // );
+    // return res.redirect(
+    //     `https://mobile.arenaxpro.com?token=${encodeURIComponent(token)}`
+    // );
 });
 
 module.exports = router
