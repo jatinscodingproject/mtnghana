@@ -48,7 +48,7 @@ router.get("/redirect", (req, res) => {
     );
 });
 
-router.get("/notify-callback", (req, res) => {
+router.post("/notify-callback", (req, res) => {
     console.log(req)
     console.log("req.query" , req.body)
     // if (!mobileNumber) {
