@@ -30,7 +30,7 @@ const jwt = require("jsonwebtoken");
 router.get("/redirect", (req, res) => {
     const { msisdn, transactionID } = req.query;
     console.log(req)
-    console.log("req.query" , req.query)
+    console.log("redirect" , req.query)
    
 
     const token = jwt.sign(
@@ -50,7 +50,7 @@ router.get("/redirect", (req, res) => {
 
 router.post("/notify-callback", (req, res) => {
     console.log(req)
-    console.log("req.query" , req.body)
+    console.log("callback" , req.body)
     // if (!mobileNumber) {
     //     return res.status(400).send("Mobile number is required");
     // }
