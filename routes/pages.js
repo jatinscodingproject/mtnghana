@@ -49,25 +49,11 @@ router.get("/redirect", (req, res) => {
 });
 
 router.post("/notify-callback", (req, res) => {
-    console.log(req)
-    console.log("callback" , req.body)
-    // if (!mobileNumber) {
-    //     return res.status(400).send("Mobile number is required");
-    // }
-
-    // const token = jwt.sign(
-    //     // {
-    //     //     // msisdn: mobileNumber,
-    //     //     transactionID,
-    //     // },
-    //     process.env.JWT_SECRET,
-    //     {
-    //         expiresIn: "15m",
-    //     }
-    // );
-    // return res.redirect(
-    //     `https://mobile.arenaxpro.com?token=${encodeURIComponent(token)}`
-    // );
+    try{
+        console.log("callback" , req.body)
+    }catch(error){
+        console.log(error)
+    }
 });
 
 module.exports = router
