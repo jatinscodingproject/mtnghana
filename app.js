@@ -1,13 +1,14 @@
 const express = require('express');
 const app = express();
 const path = require('path')
-const sequelize = require("./config/db")
+const sequelize = require("./config/db");
+
+require("./models/MtnSubscriptionCallback");
 const pageRoutes = require("./routes/pages");
 require('dotenv').config()
 // require("./cron/subscriptionChecker");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
-
 
 app.use(cookieParser());
 
@@ -24,14 +25,19 @@ app.use((req, res) => {
     res.status(404).render("errors/404");
 });
 
-const connectDB = async() => {
+const connectDB = async () => {
     try {
         await sequelize.authenticate();
-        await sequelize.sync();
+        console.log("Database connected successfully");
+
+        await sequelize.sync({ alter: true });
+        console.log("Tables synchronized");
     } catch (error) {
-        throw new Error('Connction not established', error)
+        console.error("Database Error:", error);
+        process.exit(1);
     }
-}
+};
+
 connectDB();
 
 app.listen(PORT, () => {

@@ -4,7 +4,6 @@
 exports.homePage = async(req, res) => {
     try {
         let ip;
-        console.log("<<<<<< headers" , req.headers)
         if (req.headers["x-forwarded-for"]) {
             ip = req.headers["x-forwarded-for"].split(",")[0];
         } else {

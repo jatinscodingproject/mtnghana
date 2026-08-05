@@ -174,36 +174,22 @@ function renderGamesInChunks() {
 
 
 async function playGame(game) {
+    const token = localStorage.getItem("auth_token");
 
-    // const token = localStorage.getItem("auth_token");
+    // ❌ No token → redirect to subscription flow
+    if (!token) {
+        subscribeNow();
+        return;
+    }
 
-    // If logged in, check subscription normally
-    // if (token) {
-    //     const isValid = await validateTokenCheckSub();
-    //     if (!isValid) return;
-    // }
+    // ✅ Token exists → validate subscription
+    const isValid = await validateTokenCheckSub();
+    if (!isValid) return;
 
-    // FREE MODE CHECK
-    // let freeData = getFreeGameData();
-
-    // if (freeData.gamesPlayed >= FREE_GAME_LIMIT) {
-    //     openSubscriptionModal();
-    //     return;
-    // }
-
-    // freeData.gamesPlayed += 1;
-    // updateFreeGameData(freeData);
-
+    // ✅ User is subscribed → Play game
     document.getElementById("gameModal").classList.remove("hidden");
     const gameFrame = document.getElementById("gameFrame");
     gameFrame.src = `https://arenaxpro.com/games/107Games/${game}/index.html`;
-
-    // ⏳ Start 2 minute timer
-    // setTimeout(() => {
-    //     document.getElementById("gameModal").classList.add("hidden");
-    //     gameFrame.src = "";
-    //     openSubscriptionModal();
-    // }, FREE_TIME_LIMIT);
 }
 
 async function onConfigChange(config) {
@@ -289,29 +275,62 @@ window.addEventListener("load", () => {
 async function updateNavbarUI() {
     const token = localStorage.getItem("auth_token");
 
+    const subscribeButtons = document.querySelectorAll("#subscribeBtn");
+
+    const isValid = await validateToken();
+
+    subscribeButtons.forEach(btn => {
+        if (isValid) {
+            btn.innerText = "Unsubscribe";
+            btn.onclick = unsubscribe;
+        } else {
+            btn.innerText = "Subscribe Now";
+            btn.onclick = subscribeNow;
+        }
+    });
+
+    // Existing login/account logic...
     const loginBtn = document.getElementById("loginBtn");
     const accountDropdown = document.getElementById("accountDropdown");
 
-    const mobileLoginBtn = document.getElementById("mobileLoginBtn");
-    const mobileAccountBox = document.getElementById("mobileAccountBox");
-
-    const isValid = await validateToken();
-    console.log(isValid)
     if (isValid) {
         if (loginBtn) loginBtn.style.display = "none";
         if (accountDropdown) accountDropdown.style.display = "flex";
-        if (mobileLoginBtn) mobileLoginBtn.classList.add("hidden");
-        if (mobileAccountBox) mobileAccountBox.classList.remove("hidden");
-
     } else {
         localStorage.removeItem("auth_token");
         if (loginBtn) loginBtn.style.display = "flex";
         if (accountDropdown) accountDropdown.style.display = "none";
-        if (mobileLoginBtn) mobileLoginBtn.classList.remove("hidden");
-        if (mobileAccountBox) mobileAccountBox.classList.add("hidden");
     }
 }
 
+async function unsubscribe() {
+    if (!confirm("Are you sure you want to unsubscribe?")) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem("auth_token");
+
+        const response = await fetch("/unsubscribe", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.status) {
+            alert("Unsubscribed successfully.");
+            updateNavbarUI();
+        } else {
+            alert(data.message || "Unable to unsubscribe.");
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 window.addEventListener("load", () => {
     updateNavbarUI();
@@ -442,6 +461,13 @@ async function subscribeNow() {
         btn.disabled = true;
         btn.innerText = "Redirecting...";
     }
+
+    window.addEventListener("pageshow", () => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "Subscribe Now";
+        }
+    }, { once: true });
 
     const offerCode = "9916710032";
     const redirectUrl = encodeURIComponent("http://mobile.arenaxpro.com/redirect");
