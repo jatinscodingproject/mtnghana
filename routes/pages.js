@@ -125,20 +125,25 @@ router.get("/redirect", async (req, res) => {
 
 router.post("/notify-callback", async (req, res) => {
     try {
-
-        console.log("callback body" , req.body);
-
+        console.log("callback body", JSON.stringify(req.body, null, 2));
         const body = req.body;
-
+        const callbackData = {};
+        if (Array.isArray(body.requestParam?.data)) {
+            body.requestParam.data.forEach(item => {
+                callbackData[item.name] = item.value;
+            });
+        }
+        console.log(callbackData);
         await mtnSubscriptionCallback.create({
-            transaction_id: body.transactionID,
-            cgid: body.CGID,
-            msisdn: body.msisdn,
-            offer_id: body.offerId,
-            command: body.command,
-            subscriber_life_cycle: body.SubscriberLifeCycle,
-            subscription_status: body.SubscriptionStatus,
-            status_code: body.status,
+            transaction_id: callbackData.TransactionId,
+            client_transaction_id: callbackData.ClientTransactionId,
+            cgid: body.requestId,
+            msisdn: callbackData.Msisdn,
+            offer_id: callbackData.OfferCode,
+            command: body.requestParam.command,
+            subscriber_life_cycle: callbackData.SubscriberLifeCycle,
+            subscription_status: callbackData.SubscriptionStatus,
+            status_code: callbackData.Reason,
             callback_payload: body,
             is_callback_received: true
         });
@@ -149,10 +154,11 @@ router.post("/notify-callback", async (req, res) => {
 
     } catch (err) {
         console.error(err);
-
         return res.status(500).json({
-            success: false
+            success: false,
+            error: err.message
         });
+
     }
 });
 
