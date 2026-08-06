@@ -38,14 +38,14 @@ router.get("/redirect", async (req, res) => {
             status
         } = req.query;
 
-        await SubscriptionRedirect.create({
-            cgid: CGID,
-            transaction_id: transactionID,
-            offer_id: Offerid,
-            msisdn: msisdn,
-            status_code: status,
-            payload: req.query
-        });
+        // await SubscriptionRedirect.create({
+        //     cgid: CGID,
+        //     transaction_id: transactionID,
+        //     offer_id: Offerid,
+        //     msisdn: msisdn,
+        //     status_code: status,
+        //     payload: req.query
+        // });
 
         let allowLogin = false;
         let message = "";
