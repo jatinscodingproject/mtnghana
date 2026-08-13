@@ -12,29 +12,30 @@ exports.gameCentricCallback = async (req, res) => {
             });
         }
 
-        let msisdn = phone;
+        // Clean phone number
+        let msisdn = String(phone).trim().replace(/\D/g, "");
 
-        if (msisdn.startsWith("0")) {
-            msisdn = "233" + msisdn.substring(1);
-        } else if (msisdn.length === 10 && /^\d{10}$/.test(msisdn)) {
-            msisdn = "233" + msisdn;
+        // Convert to database format: 544582322
+        if (msisdn.startsWith("233")) {
+            msisdn = msisdn.substring(3);
+        } else if (msisdn.startsWith("0")) {
+            msisdn = msisdn.substring(1);
         }
 
-        const hashed = crypto
-            .createHash("sha256")
-            .update(msisdn)
-            .digest("hex");
+        console.log("Original phone:", phone);
+        console.log("Cleaned MSISDN:", msisdn);
 
         const user = await MtnSubscriptionCallback.findOne({
             where: {
-                msisdn: phone
+                msisdn: msisdn
             }
         });
 
         if (!user) {
             return res.status(404).json({
                 status: "not_found",
-                message: "No user found"
+                message: "No user found",
+                phone: msisdn
             });
         }
 
