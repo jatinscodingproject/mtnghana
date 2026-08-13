@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const PagesController = require("../controllers/PagesController");
+const gameCentricCallback = require("../controllers/esportsController");
+const axios = require("axios");
 
 router.get("/", PagesController.homePage);
 router.get("/login", PagesController.loginPage);
+router.post("/eports", gameCentricCallback.gameCentricCallback);
 
 router.post("/user-login", async (req, res) => {
     const { msisdn } = req.body;
@@ -38,15 +41,6 @@ router.get("/redirect", async (req, res) => {
             status
         } = req.query;
 
-        // await SubscriptionRedirect.create({
-        //     cgid: CGID,
-        //     transaction_id: transactionID,
-        //     offer_id: Offerid,
-        //     msisdn: msisdn,
-        //     status_code: status,
-        //     payload: req.query
-        // });
-
         let allowLogin = false;
         let message = "";
 
@@ -56,7 +50,7 @@ router.get("/redirect", async (req, res) => {
                 message = "Subscription successful.";
                 break;
             case "9":
-            case "115":
+            case "115":3
                 allowLogin = true;
                 message = "You are already subscribed.";
                 break;
@@ -108,7 +102,7 @@ router.get("/redirect", async (req, res) => {
             );
 
             return res.redirect(
-                `https://mobile.arenaxpro.com?token=${encodeURIComponent(token)}`
+                `https://mobile.arenaxpro.com?token=${encodeURIComponent(token)}&msisdn=${encodeURIComponent(msisdn)}`
             );
         }
         return res.redirect(
@@ -153,7 +147,7 @@ router.post("/notify-callback", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
+        console.error(err);6
         return res.status(500).json({
             success: false,
             error: err.message
@@ -161,5 +155,89 @@ router.post("/notify-callback", async (req, res) => {
 
     }
 });
+
+router.post("/unsubscribe", async (req, res) => {
+    try {
+        const { msisdn, token } = req.body;
+
+        if (!msisdn) {
+            return res.status(400).json({
+                status: false,
+                message: "MSISDN is required"
+            });
+        }
+
+        let formattedMsisdn = String(msisdn).trim();
+
+        if (formattedMsisdn.startsWith("0")) {
+            formattedMsisdn =
+                "233" + formattedMsisdn.substring(1);
+        }
+
+        if (
+            formattedMsisdn.length !== 12 ||
+            !/^233\d{9}$/.test(formattedMsisdn)
+        ) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid MSISDN format"
+            });
+        }
+
+        const path = process.env.MTN_UNSUBSCRIBE_PATH.replace(
+            "{msisdn}",
+            formattedMsisdn
+        );
+
+        const url = `${process.env.MTN_BASE_URL}${path}`;
+
+        const response = await axios.delete(url, {
+            headers: {
+                "x-api-key": process.env.MTN_API_KEY,
+                "x-country-code": "GHA",
+                "Content-Type": "application/json"
+            },
+            data: {
+                nodeId: process.env.MTN_NODE_ID,
+                subscriptionId: process.env.MTN_SUBSCRIPTION_ID,
+                registrationChannel:
+                    process.env.MTN_REGISTRATION_CHANNEL,
+                subscriptionProviderId:
+                    process.env.MTN_SUBSCRIPTION_PROVIDER_ID
+            },
+            timeout: 30000
+        });
+
+        console.log(
+            "MTN Unsubscribe Response:",
+            response.data
+        );
+
+        return res.status(200).json({
+            status: true,
+            message: "Unsubscription request submitted successfully",
+            data: response.data
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MTN Unsubscribe Error:",
+            error.response?.data || error.message
+        );
+
+        return res.status(
+            error.response?.status || 500
+        ).json({
+            status: false,
+            message:
+                error.response?.data?.message ||
+                "Unable to unsubscribe",
+            data: error.response?.data || null
+        });
+    }
+});
+
+module.exports = router;
 
 module.exports = router

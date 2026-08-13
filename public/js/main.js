@@ -272,36 +272,6 @@ window.addEventListener("load", () => {
     }, 100);
 });
 
-async function updateNavbarUI() {
-    const token = localStorage.getItem("auth_token");
-
-    const subscribeButtons = document.querySelectorAll("#subscribeBtn");
-
-    const isValid = await validateToken();
-
-    subscribeButtons.forEach(btn => {
-        if (isValid) {
-            btn.innerText = "Unsubscribe";
-            btn.onclick = unsubscribe;
-        } else {
-            btn.innerText = "Subscribe Now";
-            btn.onclick = subscribeNow;
-        }
-    });
-
-    // Existing login/account logic...
-    const loginBtn = document.getElementById("loginBtn");
-    const accountDropdown = document.getElementById("accountDropdown");
-
-    if (isValid) {
-        if (loginBtn) loginBtn.style.display = "none";
-        if (accountDropdown) accountDropdown.style.display = "flex";
-    } else {
-        localStorage.removeItem("auth_token");
-        if (loginBtn) loginBtn.style.display = "flex";
-        if (accountDropdown) accountDropdown.style.display = "none";
-    }
-}
 
 async function unsubscribe() {
     if (!confirm("Are you sure you want to unsubscribe?")) {
@@ -341,83 +311,9 @@ window.addEventListener("load", () => {
     }, 1000);
 });
 
-async function validateToken() {
-    const token = localStorage.getItem("auth_token");
-    console.log("Stored token:", token);
-    if (!token) return false;
-
-    try {
-        const response = await fetch("/validate-token", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
-        });
-
-        const data = await response.json();
-        if (!data.status) {
-            localStorage.removeItem("auth_token");
-            updateNavbarUI();
-            return false;
-        }
-
-        return true;
-
-    } catch (err) {
-        console.error("Token validation error:", err);
-        return false;
-    }
-}
-
-async function validateTokenCheckSub() {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-        window.location.href = "/login";
-        return false;
-    }
-
-    try {
-        const response = await fetch("/validate-token-check-subscription", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
-
-        const data = await response.json();
-
-        if (["NO_TOKEN", "INVALID_TOKEN", "TOKEN_EXPIRED"].includes(data.code)) {
-            localStorage.removeItem("auth_token");
-            window.location.href = "/login";
-            return false;
-        }
-
-        if (["NO_SUBSCRIPTION", "SUBSCRIPTION_EXPIRED"].includes(data.code)) {
-            openSubscriptionModal();
-            return false;
-        }
-
-        return true;
-
-    } catch (err) {
-        console.error(err);
-        return false;
-    }
-}
-
-function openSubscriptionModal() {
-    document.getElementById("subscriptionModal").classList.remove("hidden");
-}
-
-function closeSubscriptionModal() {
-    document.getElementById("subscriptionModal").classList.add("hidden");
-}
-
 async function handleHeroPlay() {
     const token = localStorage.getItem("auth_token");
 
-    // ❌ Not logged in
     if (!token) {
         window.location.href = "/login";
         return;

@@ -12,12 +12,59 @@
             <div class="loader-ring"></div>
             <div class="loader-logo">
                 <span class="loader-text">
-                    <span class="tex-white font-bold text-2xl">arena</span><span class="text-orange-500 font-bold text-2xl">X</span><span class="text-orange-500 font-bold text-2xl">pro</span>
+                    <span class="tex-white font-bold text-2xl">arena</span><span
+                        class="text-orange-500 font-bold text-2xl">X</span><span
+                        class="text-orange-500 font-bold text-2xl">pro</span>
                 </span>
             </div>
         </div>
     </div>
+    <div id="subscriptionBanner" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0">
+            <img src="/images/bg4.jpg" class="w-full h-full object-cover" alt="Gaming Background">
+            <div class="absolute inset-0 bg-black/75"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-orange-900/20 via-black/30 to-black/80"></div>
+        </div>
 
+        <div class="relative z-10 w-full max-w-xl mx-auto px-6 text-center">
+            <div class="mb-1">
+                <span class="text-5xl md:text-6xl font-black tracking-tight text-white">
+                    Arena<span class="text-orange-500">Xpro</span>
+                </span>
+            </div>
+
+            <p class="text-white text-lg md:text-md font-medium mb-10">
+                Unleash Your Inner Gamer
+            </p>
+            <div class="flex justify-center mb-8">
+                <div class="w-36 h-36 md:w-44 md:h-44 rounded-full
+                        overflow-hidden border-4 border-orange-500
+                        shadow-[0_0_35px_rgba(249,115,22,0.6)]">
+                    <img src="data:image/png;base64,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"
+                        class="w-full h-full object-cover" alt="Game">
+                </div>
+            </div>
+            <h2 class="text-white text-2xl md:text-2xl font-bold mb-8">
+                Play Games and Enjoy
+            </h2>
+            <button id="bannerSubscribeBtn" onclick="subscribeNow()" class="w-50 max-w-full bg-orange-500
+                   hover:bg-orange-600
+                   text-white text-sm md:text-sm
+                   font-black py-3 px-4
+                   rounded-2xl
+                   shadow-[0_0_30px_rgba(249,115,22,0.55)]
+                   transition-all duration-300
+                   hover:scale-105
+                   active:scale-95">
+                SUBSCRIBE
+            </button>
+            <div class="mt-3 text-white">
+                <p class="text-xl md:text-xl font-black mt-2">
+                    SUBSCRIPTION GHS 1.50/DAILY
+                </p>
+            </div>
+        </div>
+    </div>
     <div class="main-content" id="mainContent">
         <nav class="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-sm border-b border-white/10">
             <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -27,15 +74,17 @@
                     <span class="text-orange-500 font-bold text-2xl">pro</span>
                 </a>
                 <button class="md:hidden text-white focus:outline-none" id="mobileBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#home" class="text-white hover:text-[#ff6b00] transition">Home</a>
                     <a href="#casual-games" class="text-white hover:text-[#ff6b00] transition">Casual Games</a>
-                    <button id="subscribeBtn" onclick="subscribeNow()" class="px-4 py-2 bg-orange-600 text-white rounded">
+                    <button id="subscribeBtn" onclick="subscribeNow()"
+                        class="px-4 py-2 bg-orange-600 text-white rounded">
                         Subscribe Now
                     </button>
                 </div>
@@ -46,22 +95,24 @@
 
                     <a href="#home" class="hover:text-[#ff6b00]">Home</a>
                     <a href="#casual-games" class="hover:text-[#ff6b00]">Casual Games</a>
-                    <button id="subscribeBtn" onclick="subscribeNow()" class="px-4 py-2 bg-orange-600 text-white rounded">
+                    <button id="subscribeBtn" onclick="subscribeNow()"
+                        class="px-4 py-2 bg-orange-600 text-white rounded">
                         Subscribe Now
                     </button>
-
                 </div>
             </div>
         </nav>
 
         <section class="hero-slider relative h-96 md:h-[600px] slide-up">
             <div class="hero-slide active h-full flex items-center justify-center relative overflow-hidden">
-                <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image: url('/images/bg4.jpg');">
+                <div class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    style="background-image: url('/images/bg4.jpg');">
                 </div>
                 <div class="absolute inset-0 bg-black/50"></div>
                 <div class="absolute inset-0 flex items-end justify-center">
                     <div class="text-center px-4 w-full max-w-4xl mx-auto">
-                        <h1 class="text-5xl md:text-7xl font-bold mb-6 text-white drop-shadow-2xl leading-tight" id="heroTitle">
+                        <h1 class="text-5xl md:text-7xl font-bold mb-6 text-white drop-shadow-2xl leading-tight"
+                            id="heroTitle">
                             Epic Gaming Awaits
                         </h1>
                     </div>
@@ -88,7 +139,8 @@
         </section>
 
         <section class="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 overflow-hidden">
-            <div class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80" style="background-image: url('/images/banner1.png');">
+            <div class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80"
+                style="background-image: url('/images/banner1.png');">
             </div>
             <div class="absolute inset-0 bg-black/50"></div>
             <div class="relative z-10 flex flex-col items-center justify-end text-center py-40 px-4">
@@ -101,7 +153,8 @@
                 </p>
 
                 <div class="mt-10">
-                    <a href="https://arenaxpro.gamecentric.io/login" class="bg-orange-600 text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-orange-700 transition transform hover:scale-110 shadow-xl">
+                    <a href="https://arenaxpro.gamecentric.io/login"
+                        class="bg-orange-600 text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-orange-700 transition transform hover:scale-110 shadow-xl">
                         Play Now
                     </a>
 
@@ -157,12 +210,14 @@
 
         <section class="py-20 px-4 slide-up bg-gradient-to-br from-black via-gray-900 to-black">
             <div class="max-w-7xl mx-auto">
-                <div class="grid md:grid-cols-2 gap-12 items-center bg-gradient-to-br from-gray-900 to-black rounded-3xl overflow-hidden neon-border shadow-2xl">
+                <div
+                    class="grid md:grid-cols-2 gap-12 items-center bg-gradient-to-br from-gray-900 to-black rounded-3xl overflow-hidden neon-border shadow-2xl">
                     <div class="p-8 md:p-16 order-2 md:order-1">
                         <div class="inline-block mb-6">
-                            <span class="bg-orange-500 text-white px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider">
-                        Community
-                    </span>
+                            <span
+                                class="bg-orange-500 text-white px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider">
+                                Community
+                            </span>
                         </div>
 
                         <h2 class="text-3xl md:text-5xl font-bold mb-6 leading-tight">
@@ -170,10 +225,12 @@
                         </h2>
 
                         <p class="text-gray-300 mb-8 text-lg leading-relaxed">
-                            Connect with millions of players, join tournaments, and become part of the most exciting gaming community on the internet.
+                            Connect with millions of players, join tournaments, and become part of the most exciting
+                            gaming community on the internet.
                         </p>
 
-                        <a href="/register" class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-4 rounded-full font-bold text-lg transition transform hover:scale-110 shadow-2xl">
+                        <a href="/register"
+                            class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-4 rounded-full font-bold text-lg transition transform hover:scale-110 shadow-2xl">
                             Get Started
                         </a>
                     </div>
@@ -192,7 +249,8 @@
                 </div>
 
                 <div class="border-t border-gray-800 pt-8 text-center text-gray-400" id="footerText">
-                    © <span id="currentYear"></span> arena<span style="color: #ff6b00;">Xpro</span>. All rights reserved. Made for gamer lovers worldwide.
+                    © <span id="currentYear"></span> Arena<span style="color: #ff6b00;">Xpro</span>. All rights
+                    reserved. Made for gamer lovers worldwide.
                 </div>
 
             </div>
@@ -217,7 +275,6 @@
             </button>
         </div>
         <div id="subscriptionModal" class="fixed inset-0 hidden bg-black/70 flex items-center justify-center z-50">
-
             <div class="bg-black border border-orange-500 rounded-xl p-6 max-w-sm text-center">
                 <h2 class="text-xl font-bold text-orange-500 mb-3">
                     Subscription Expired
@@ -228,106 +285,144 @@
                 </p>
 
                 <div class="flex justify-center gap-3">
-                    <button id="subscribeBtn" onclick="createNewInvoice()" class="px-4 py-2 bg-orange-600 text-white rounded">
-                Subscribe Now
-            </button>
+                    <button id="subscribeBtn" onclick="createNewInvoice()"
+                        class="px-4 py-2 bg-orange-600 text-white rounded">
+                        Subscribe Now
+                    </button>
 
                     <button onclick="closeSubscriptionModal()" class="px-4 py-2 bg-gray-700 text-white rounded">
-                Close
-            </button>
+                        Close
+                    </button>
                 </div>
             </div>
         </div>
-
-        <script>
-            async function createNewInvoice() {
-                const btn = document.getElementById("subscribeBtn");
-                btn.disabled = true;
-                btn.textContent = "Processing...";
-
-                try {
-                    const response = await fetch("/new-invoice", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        }
-                    });
-                    const data = await response.json();
-                    localStorage.setItem("otp_verify_data", JSON.stringify(data.data));
-                    if (!data.status) {
-                        btn.disabled = false;
-                        btn.textContent = "Subscribe Now";
-                        alert(data.message || "Something went wrong");
-                        return;
-                    }
-                    window.location.href = data.redirect;
-
-                } catch (err) {
-                    console.error(err);
-                    btn.disabled = false;
-                    btn.textContent = "Subscribe Now";
-                }
-            }
-
-            function closeSubscriptionModal() {
-                document.getElementById("subscriptionModal").classList.add("hidden");
-            }
-        </script>
-
-        <script>
-            function goToAccount() {
-                window.location.href = "/my-account";
-            }
-
-            function logoutUser() {
-                localStorage.removeItem("auth_token");
-                window.location.reload();
-            }
-
-            function closeGame() {
-                document.getElementById("gameModal").classList.add("hidden");
-                document.getElementById("gameFrame").src = "";
-            }
-
-            function toggleFullscreen() {
-                const frame = document.getElementById("gameFrame");
-
-                if (!document.fullscreenElement) {
-                    frame.requestFullscreen();
-                } else {
-                    document.exitFullscreen();
-                }
-            }
-
-            const mobileBtn = document.getElementById("mobileBtn");
-            const mobileMenu = document.getElementById("mobileMenu");
-
-            mobileBtn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                mobileMenu.classList.toggle("hidden");
-            });
-            const accountDropdown = document.getElementById("accountDropdown");
-            const dropdownMenu = document.getElementById("dropdownMenu");
-
-            if (accountDropdown) {
-                accountDropdown.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle("hidden");
-                });
-            }
-
-            document.addEventListener("click", () => {
-                if (mobileMenu) mobileMenu.classList.add("hidden");
-                if (dropdownMenu) dropdownMenu.classList.add("hidden");
-            });
-        </script>
         <script>
             window.msisdn = "<%= msisdn || '' %>";
             window.isHE = <%= isHE %>;
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const urlParams = new URLSearchParams(window.location.search);
+
+                const token = urlParams.get("token");
+                const msisdn = urlParams.get("msisdn");
+                const storedToken = localStorage.getItem("auth_token");
+                const noTokenBanner = document.getElementById("noTokenBanner");
+
+                if (!storedToken && noTokenBanner) {
+                    noTokenBanner.classList.remove("hidden");
+                }
+                if (token) {
+                    localStorage.setItem("auth_token", token);
+                }
+
+                if (msisdn) {
+                    localStorage.setItem("msisdn", msisdn);
+                }
+
+                updateSubscriptionButton();
+            });
+
+
+            function updateSubscriptionButton() {
+                const token = localStorage.getItem("auth_token");
+
+                const buttons = [
+                    document.getElementById("subscribeBtn"),
+                    document.getElementById("mobileSubscribeBtn")
+                ];
+
+                buttons.forEach((btn) => {
+                    if (!btn) return;
+
+                    if (token) {
+                        btn.textContent = "Unsubscribe";
+                        btn.onclick = unsubscribeUser;
+                    } else {
+                        btn.textContent = "Subscribe Now";
+                        btn.onclick = subscribeNow;
+                    }
+                });
+            }
+
+            async function unsubscribeUser() {
+
+                if (!confirm("Are you sure you want to unsubscribe?")) {
+                    return;
+                }
+
+                const token = localStorage.getItem("auth_token");
+                const msisdn = localStorage.getItem("msisdn");
+
+                if (!token || !msisdn) {
+                    alert("Subscription information not found.");
+                    return;
+                }
+
+                const buttons = [
+                    document.getElementById("subscribeBtn"),
+                    document.getElementById("mobileSubscribeBtn")
+                ];
+
+                buttons.forEach((btn) => {
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.textContent = "Unsubscribing...";
+                    }
+                });
+
+                try {
+
+                    const response = await fetch("/unsubscribe", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            token: token,
+                            msisdn: msisdn
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok || !data.status) {
+
+                        alert(data.message || "Unable to unsubscribe.");
+
+                        buttons.forEach((btn) => {
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.textContent = "Unsubscribe";
+                            }
+                        });
+
+                        return;
+                    }
+
+                    // Remove local subscription information
+                    localStorage.removeItem("auth_token");
+                    localStorage.removeItem("msisdn");
+
+                    alert(data.message || "Unsubscribed successfully.");
+
+                    updateSubscriptionButton();
+
+                } catch (error) {
+
+                    console.error("Unsubscribe Error:", error);
+
+                    alert("Something went wrong. Please try again.");
+
+                    buttons.forEach((btn) => {
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.textContent = "Unsubscribe";
+                        }
+                    });
+                }
+            }
         </script>
-
 </body>
-
-</html>
 
 </html>
