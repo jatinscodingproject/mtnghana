@@ -27,7 +27,7 @@ exports.gameCentricCallback = async (req, res) => {
 
         const user = await MtnSubscriptionCallback.findOne({
             where: {
-                msisdn_hash: hashed
+                msisdn: phone
             }
         });
 

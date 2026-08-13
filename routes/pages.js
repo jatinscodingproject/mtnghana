@@ -6,7 +6,7 @@ const axios = require("axios");
 
 router.get("/", PagesController.homePage);
 router.get("/login", PagesController.loginPage);
-router.post("/eports", gameCentricCallback.gameCentricCallback);
+router.post("/esports", gameCentricCallback.gameCentricCallback);
 
 router.post("/user-login", async (req, res) => {
     const { msisdn } = req.body;
