@@ -41,6 +41,8 @@ router.get("/redirect", async (req, res) => {
             status
         } = req.query;
 
+        console.log('query' , req.query);
+
         let allowLogin = false;
         let message = "";
 
