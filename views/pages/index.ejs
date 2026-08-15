@@ -300,17 +300,17 @@
             window.msisdn = "<%= msisdn || '' %>";
             window.isHE = <%= isHE %>;
 
-            document.addEventListener("DOMContentLoaded", () => {
+           document.addEventListener("DOMContentLoaded", () => {
+
                 const urlParams = new URLSearchParams(window.location.search);
 
                 const token = urlParams.get("token");
                 const msisdn = urlParams.get("msisdn");
+                const error = urlParams.get("error");
+
                 const storedToken = localStorage.getItem("auth_token");
                 const noTokenBanner = document.getElementById("noTokenBanner");
 
-                if (!storedToken && noTokenBanner) {
-                    noTokenBanner.classList.remove("hidden");
-                }
                 if (token) {
                     localStorage.setItem("auth_token", token);
                 }
@@ -319,9 +319,20 @@
                     localStorage.setItem("msisdn", msisdn);
                 }
 
+                if (error) {
+                    showErrorModal(error);
+                    window.history.replaceState(
+                        {},
+                        document.title,
+                        window.location.pathname
+                    );
+                }
+                if (!token && !storedToken && noTokenBanner) {
+                    noTokenBanner.classList.remove("hidden");
+                }
+
                 updateSubscriptionButton();
             });
-
 
             function updateSubscriptionButton() {
                 const token = localStorage.getItem("auth_token");
