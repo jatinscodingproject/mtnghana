@@ -176,17 +176,11 @@
     async function playGame(game) {
         const token = localStorage.getItem("auth_token");
 
-        // ❌ No token → redirect to subscription flow
         if (!token) {
             subscribeNow();
             return;
         }
 
-        // ✅ Token exists → validate subscription
-        // const isValid = await validateTokenCheckSub();
-        // if (!isValid) return;
-
-        // ✅ User is subscribed → Play game
         document.getElementById("gameModal").classList.remove("hidden");
         const gameFrame = document.getElementById("gameFrame");
         gameFrame.src = `https://arenaxpro.com/games/107Games/${game}/index.html`;
@@ -372,7 +366,6 @@
         let consentUrl = "";
 
         if (window.isHE && window.msisdn) {
-            // Mobile Data (Header Enrichment)
             consentUrl =
                 `http://20.87.33.165/Redirect` +
                 `?OfferCode=${offerCode}` +
