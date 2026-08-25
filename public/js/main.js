@@ -173,18 +173,73 @@
     }
 
 
-    async function playGame(game) {
-        const token = localStorage.getItem("auth_token");
+   async function playGame(game) {
+    const token = localStorage.getItem("auth_token");
+    const msisdn = localStorage.getItem("msisdn");
 
-        if (!token) {
+    // No login
+    if (!token) {
+        subscribeNow();
+        return;
+    }
+
+    // No MSISDN
+    if (!msisdn) {
+        localStorage.removeItem("auth_token");
+        subscribeNow();
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/check-subscription?msisdn=${encodeURIComponent(msisdn)}`,
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/json"
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        console.log("Subscription check:", data);
+
+        // User is unsubscribed
+        if (
+            data.subscribed === false ||
+            data.subscription_status === "D"
+        ) {
+            // Remove login/session data
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("msisdn");
+
+            // Close game modal if open
+            document.getElementById("gameModal")?.classList.add("hidden");
+
+            alert("Your subscription is inactive. Please subscribe again.");
+
+            // Start subscription flow
             subscribeNow();
+
             return;
         }
 
+        // User is subscribed
         document.getElementById("gameModal").classList.remove("hidden");
+
         const gameFrame = document.getElementById("gameFrame");
-        gameFrame.src = `https://arenaxpro.com/games/107Games/${game}/index.html`;
+
+        gameFrame.src =
+            `https://arenaxpro.com/games/107Games/${encodeURIComponent(game)}/index.html`;
+
+    } catch (error) {
+        console.error("Subscription check failed:", error);
+
+        alert("Unable to verify your subscription. Please try again.");
     }
+}
 
     async function onConfigChange(config) {
         const setText = (id, value) => {

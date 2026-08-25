@@ -240,6 +240,92 @@ router.post("/unsubscribe", async (req, res) => {
     }
 });
 
+router.get("/check-subscription", async (req, res) => {
+    try {
+        let { msisdn } = req.query;
+
+        if (!msisdn) {
+            return res.status(400).json({
+                status: false,
+                message: "MSISDN is required"
+            });
+        }
+
+        // Normalize MSISDN
+        msisdn = String(msisdn).trim();
+
+        if (msisdn.startsWith("0")) {
+            msisdn = "233" + msisdn.substring(1);
+        }
+
+        if (!/^233\d{9}$/.test(msisdn)) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid MSISDN format"
+            });
+        }
+
+        // Get ONLY the latest entry for this MSISDN
+        const latestEntry = await mtnSubscriptionCallback.findOne({
+            where: {
+                msisdn: msisdn
+            },
+            order: [
+                ["createdAt", "DESC"]
+            ]
+        });
+
+        console.log("Latest subscription entry:", latestEntry);
+
+        // No entry found
+        if (!latestEntry) {
+            return res.status(200).json({
+                status: true,
+                subscribed: false,
+                message: "User is unsubscribed"
+            });
+        }
+
+        const subscriptionStatus = String(
+            latestEntry.subscription_status || ""
+        )
+            .trim()
+            .toUpperCase();
+
+        console.log("MSISDN:", msisdn);
+        console.log("Latest subscription_status:", subscriptionStatus);
+
+        // D = Unsubscribed
+        if (subscriptionStatus === "D") {
+            return res.status(200).json({
+                status: true,
+                subscribed: false,
+                message: "User is unsubscribed",
+                subscription_status: "D"
+            });
+        }
+
+        // Active subscription
+        return res.status(200).json({
+            status: true,
+            subscribed: true,
+            message: "User has an active subscription",
+            subscription_status: latestEntry.subscription_status
+        });
+
+    } catch (error) {
+        console.error(
+            "Check Subscription Error:",
+            error
+        );
+
+        return res.status(500).json({
+            status: false,
+            message: "Unable to check subscription status",
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
 
-module.exports = router
