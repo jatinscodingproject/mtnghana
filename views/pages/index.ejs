@@ -298,159 +298,959 @@
             </div>
         </div>
         <script>
-            document.getElementById('playNowBtn').addEventListener('click', function (e) {
-                e.preventDefault();
+/* ============================================================
+   PLAY NOW
+   ============================================================ */
 
-                const msisdn = localStorage.getItem('msisdn');
+const playNowBtn = document.getElementById("playNowBtn");
 
-                if (!msisdn) {
-                    console.error('MSISDN not found in localStorage');
-                    return;
-                }
+if (playNowBtn) {
 
-                const url = new URL('https://arenaxpro.arbeex.com/');
+    playNowBtn.addEventListener("click", function (e) {
 
-                url.searchParams.set('msisdn', msisdn);
+        e.preventDefault();
 
-                window.location.assign(url.href);
-            });
-            window.msisdn = "<%= msisdn || '' %>";
-            window.isHE = <%= isHE %>;
+        const token =
+            localStorage.getItem("auth_token");
 
-           document.addEventListener("DOMContentLoaded", () => {
+        const msisdn =
+            localStorage.getItem("msisdn");
 
-                const urlParams = new URLSearchParams(window.location.search);
+        console.log("Play Now clicked");
+        console.log("Token exists:", !!token);
+        console.log("MSISDN:", msisdn);
 
-                const token = urlParams.get("token");
-                const msisdn = urlParams.get("msisdn");
-                const error = urlParams.get("error");
+        /*
+         * User must have both token and MSISDN
+         */
+        if (!token || !msisdn) {
 
-                const storedToken = localStorage.getItem("auth_token");
-                const noTokenBanner = document.getElementById("noTokenBanner");
+            console.warn(
+                "User is not authenticated/subscribed"
+            );
 
-                if (token) {
-                    localStorage.setItem("auth_token", token);
-                }
+            showSubscriptionBanner();
 
-                if (msisdn) {
-                    localStorage.setItem("msisdn", msisdn);
-                }
+            return;
+        }
 
-                if (error) {
-                    showErrorModal(error);
-                    window.history.replaceState(
-                        {},
-                        document.title,
-                        window.location.pathname
-                    );
-                }
-                if (!token && !storedToken && noTokenBanner) {
-                    noTokenBanner.classList.remove("hidden");
-                }
+        /*
+         * User is subscribed
+         * Open game/content application
+         */
+        const url =
+            new URL("https://arenaxpro.arbeex.com/");
 
-                updateSubscriptionButton();
-            });
+        url.searchParams.set(
+            "msisdn",
+            msisdn
+        );
 
-            function updateSubscriptionButton() {
-                const token = localStorage.getItem("auth_token");
+        /*
+         * Also pass token to content application
+         * if required by the game/content server.
+         */
+        url.searchParams.set(
+            "token",
+            token
+        );
 
-                const buttons = [
-                    document.getElementById("subscribeBtn"),
-                    document.getElementById("mobileSubscribeBtn")
-                ];
+        console.log(
+            "Opening content for subscribed user"
+        );
 
-                buttons.forEach((btn) => {
-                    if (!btn) return;
+        window.location.assign(
+            url.href
+        );
+    });
+}
 
-                    if (token) {
-                        btn.textContent = "Unsubscribe";
-                        btn.onclick = unsubscribeUser;
-                    } else {
-                        btn.textContent = "Subscribe Now";
-                        btn.onclick = subscribeNow;
-                    }
-                });
+
+/* ============================================================
+   GLOBAL VARIABLES
+   ============================================================ */
+
+window.msisdn = "<%= msisdn || '' %>";
+window.isHE = <%= isHE %>;
+
+
+/* ============================================================
+   DOM READY
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
+
+        console.log(
+            "================================="
+        );
+
+        console.log(
+            "ArenaXpro subscription initialization"
+        );
+
+        console.log(
+            "================================="
+        );
+
+        const urlParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const token =
+            urlParams.get("token");
+
+        const msisdnFromUrl =
+            urlParams.get("msisdn");
+
+        const error =
+            urlParams.get("error");
+
+
+        const subscriptionBanner =
+            document.getElementById(
+                "subscriptionBanner"
+            );
+
+        const mainContent =
+            document.getElementById(
+                "mainContent"
+            );
+
+        const loadingScreen =
+            document.getElementById(
+                "loadingScreen"
+            );
+
+
+        /*
+         * ========================================================
+         * CASE 1
+         * MTN REDIRECT RETURNED TOKEN
+         *
+         * Example:
+         *
+         * ?token=xxxxx&msisdn=233235266268
+         *
+         * This means backend received status 200
+         * and generated the JWT.
+         * ========================================================
+         */
+
+        if (token) {
+
+            console.log(
+                "================================="
+            );
+
+            console.log(
+                "NEW SUBSCRIPTION TOKEN RECEIVED"
+            );
+
+            console.log(
+                "================================="
+            );
+
+            /*
+             * Store token
+             */
+            localStorage.setItem(
+                "auth_token",
+                token
+            );
+
+
+            /*
+             * Store MSISDN
+             */
+            if (msisdnFromUrl) {
+
+                localStorage.setItem(
+                    "msisdn",
+                    msisdnFromUrl
+                );
+
             }
 
-            async function unsubscribeUser() {
 
-                if (!confirm("Are you sure you want to unsubscribe?")) {
+            /*
+             * Verify what was stored
+             */
+            console.log(
+                "Token stored:",
+                !!localStorage.getItem(
+                    "auth_token"
+                )
+            );
+
+            console.log(
+                "MSISDN stored:",
+                localStorage.getItem(
+                    "msisdn"
+                )
+            );
+
+
+            /*
+             * IMPORTANT
+             *
+             * User is subscribed.
+             *
+             * Hide subscription page.
+             * Show actual content.
+             */
+            showMainContent();
+
+
+            /*
+             * Update Subscribe button
+             * to Unsubscribe.
+             */
+            updateSubscriptionButton();
+
+
+            /*
+             * Remove token from browser URL
+             *
+             * This keeps JWT out of browser history.
+             */
+            window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname
+            );
+
+
+            /*
+             * Stop here.
+             */
+            return;
+        }
+
+
+        /*
+         * ========================================================
+         * CASE 2
+         * MTN RETURNED ERROR
+         *
+         * Example:
+         * ?error=Insufficient balance...
+         * ========================================================
+         */
+
+        if (error) {
+
+            console.log(
+                "Subscription error:",
+                error
+            );
+
+
+            /*
+             * Do NOT allow content access
+             */
+            hideMainContent();
+
+            showSubscriptionBanner();
+
+
+            /*
+             * Show error to user
+             */
+            if (
+                typeof showErrorModal ===
+                "function"
+            ) {
+
+                showErrorModal(
+                    error
+                );
+
+            } else {
+
+                alert(error);
+
+            }
+
+
+            /*
+             * Remove error from URL
+             */
+            window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname
+            );
+
+
+            updateSubscriptionButton();
+
+            return;
+        }
+
+
+        /*
+         * ========================================================
+         * CASE 3
+         *
+         * NO TOKEN IN URL
+         *
+         * Check localStorage.
+         * ========================================================
+         */
+
+        const storedToken =
+            localStorage.getItem(
+                "auth_token"
+            );
+
+        const storedMsisdn =
+            localStorage.getItem(
+                "msisdn"
+            );
+
+
+        console.log(
+            "Existing token:",
+            !!storedToken
+        );
+
+        console.log(
+            "Existing MSISDN:",
+            storedMsisdn
+        );
+
+
+        /*
+         * ========================================================
+         * EXISTING SUBSCRIBED USER
+         * ========================================================
+         */
+
+        if (
+            storedToken &&
+            storedMsisdn
+        ) {
+
+            console.log(
+                "Existing subscribed user"
+            );
+
+
+            /*
+             * Show content
+             */
+            showMainContent();
+
+
+            /*
+             * Update button
+             */
+            updateSubscriptionButton();
+
+
+            return;
+        }
+
+
+        /*
+         * ========================================================
+         * USER NOT SUBSCRIBED
+         * ========================================================
+         */
+
+        console.log(
+            "No subscription information found"
+        );
+
+
+        hideMainContent();
+
+        showSubscriptionBanner();
+
+        updateSubscriptionButton();
+    }
+);
+
+
+/* ============================================================
+   SHOW MAIN CONTENT
+   ============================================================ */
+
+function showMainContent() {
+
+    const subscriptionBanner =
+        document.getElementById(
+            "subscriptionBanner"
+        );
+
+    const mainContent =
+        document.getElementById(
+            "mainContent"
+        );
+
+    const loadingScreen =
+        document.getElementById(
+            "loadingScreen"
+        );
+
+
+    /*
+     * Hide subscription screen
+     */
+    if (subscriptionBanner) {
+
+        subscriptionBanner.classList.add(
+            "hidden"
+        );
+
+        subscriptionBanner.style.display =
+            "none";
+    }
+
+
+    /*
+     * Show main website
+     */
+    if (mainContent) {
+
+        mainContent.classList.remove(
+            "hidden"
+        );
+
+        mainContent.style.display =
+            "";
+    }
+
+
+    /*
+     * Hide loading screen
+     */
+    if (loadingScreen) {
+
+        loadingScreen.classList.add(
+            "hidden"
+        );
+
+        loadingScreen.style.display =
+            "none";
+    }
+
+
+    console.log(
+        "MAIN CONTENT ENABLED"
+    );
+}
+
+
+/* ============================================================
+   HIDE MAIN CONTENT
+   ============================================================ */
+
+function hideMainContent() {
+
+    const mainContent =
+        document.getElementById(
+            "mainContent"
+        );
+
+
+    if (mainContent) {
+
+        mainContent.classList.add(
+            "hidden"
+        );
+
+        mainContent.style.display =
+            "none";
+    }
+
+
+    console.log(
+        "MAIN CONTENT DISABLED"
+    );
+}
+
+
+/* ============================================================
+   SHOW SUBSCRIPTION BANNER
+   ============================================================ */
+
+function showSubscriptionBanner() {
+
+    const subscriptionBanner =
+        document.getElementById(
+            "subscriptionBanner"
+        );
+
+
+    if (subscriptionBanner) {
+
+        subscriptionBanner.classList.remove(
+            "hidden"
+        );
+
+        subscriptionBanner.style.display =
+            "flex";
+    }
+
+
+    console.log(
+        "SUBSCRIPTION BANNER SHOWN"
+    );
+}
+
+
+/* ============================================================
+   UPDATE SUBSCRIBE / UNSUBSCRIBE BUTTON
+   ============================================================ */
+
+function updateSubscriptionButton() {
+
+    const token =
+        localStorage.getItem(
+            "auth_token"
+        );
+
+
+    /*
+     * Your HTML currently has duplicate
+     * subscribeBtn IDs.
+     *
+     * Therefore use querySelectorAll
+     * instead of getElementById.
+     */
+    const buttons =
+        document.querySelectorAll(
+            '[id="subscribeBtn"], #mobileSubscribeBtn, #bannerSubscribeBtn'
+        );
+
+
+    buttons.forEach(
+        function (btn) {
+
+            if (!btn) {
+                return;
+            }
+
+
+            /*
+             * Subscription exists
+             */
+            if (token) {
+
+                /*
+                 * Banner button should not say
+                 * unsubscribe because banner
+                 * itself is hidden.
+                 */
+                if (
+                    btn.id ===
+                    "bannerSubscribeBtn"
+                ) {
+
+                    btn.textContent =
+                        "SUBSCRIBE";
+
+                    btn.onclick =
+                        subscribeNow;
+
                     return;
                 }
 
-                const token = localStorage.getItem("auth_token");
-                const msisdn = localStorage.getItem("msisdn");
 
-                if (!token || !msisdn) {
-                    alert("Subscription information not found.");
-                    return;
+                btn.textContent =
+                    "Unsubscribe";
+
+                btn.onclick =
+                    unsubscribeUser;
+
+            }
+
+
+            /*
+             * No subscription
+             */
+            else {
+
+                btn.textContent =
+                    "Subscribe Now";
+
+                btn.onclick =
+                    subscribeNow;
+            }
+
+        }
+    );
+
+
+    console.log(
+        "Subscription buttons updated"
+    );
+}
+
+
+/* ============================================================
+   UNSUBSCRIBE USER
+   ============================================================ */
+
+async function unsubscribeUser() {
+
+    /*
+     * Confirmation
+     */
+    if (
+        !confirm(
+            "Are you sure you want to unsubscribe?"
+        )
+    ) {
+
+        return;
+    }
+
+
+    const token =
+        localStorage.getItem(
+            "auth_token"
+        );
+
+    const msisdn =
+        localStorage.getItem(
+            "msisdn"
+        );
+
+
+    /*
+     * Validate local subscription data
+     */
+    if (!token || !msisdn) {
+
+        alert(
+            "Subscription information not found."
+        );
+
+        return;
+    }
+
+
+    /*
+     * Get all buttons
+     */
+    const buttons =
+        document.querySelectorAll(
+            '[id="subscribeBtn"], #mobileSubscribeBtn'
+        );
+
+
+    /*
+     * Disable buttons
+     */
+    buttons.forEach(
+        function (btn) {
+
+            if (btn) {
+
+                btn.disabled = true;
+
+                btn.textContent =
+                    "Unsubscribing...";
+
+            }
+
+        }
+    );
+
+
+    try {
+
+        console.log(
+            "Sending unsubscribe request..."
+        );
+
+
+        const response =
+            await fetch(
+                "/unsubscribe",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Authorization":
+                            `Bearer ${token}`
+                    },
+
+                    body: JSON.stringify({
+                        token: token,
+                        msisdn: msisdn
+                    })
                 }
+            );
 
-                const buttons = [
-                    document.getElementById("subscribeBtn"),
-                    document.getElementById("mobileSubscribeBtn")
-                ];
 
-                buttons.forEach((btn) => {
+        /*
+         * Parse response
+         */
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Unsubscribe response:",
+            data
+        );
+
+
+        /*
+         * API error
+         */
+        if (
+            !response.ok ||
+            !data.status
+        ) {
+
+            alert(
+                data.message ||
+                "Unable to unsubscribe."
+            );
+
+
+            buttons.forEach(
+                function (btn) {
+
                     if (btn) {
-                        btn.disabled = true;
-                        btn.textContent = "Unsubscribing...";
-                    }
-                });
 
-                try {
+                        btn.disabled =
+                            false;
 
-                    const response = await fetch("/unsubscribe", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        },
-                        body: JSON.stringify({
-                            token: token,
-                            msisdn: msisdn
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (!response.ok || !data.status) {
-
-                        alert(data.message || "Unable to unsubscribe.");
-
-                        buttons.forEach((btn) => {
-                            if (btn) {
-                                btn.disabled = false;
-                                btn.textContent = "Unsubscribe";
-                            }
-                        });
-
-                        return;
+                        btn.textContent =
+                            "Unsubscribe";
                     }
 
-                    // Remove local subscription information
-                    localStorage.removeItem("auth_token");
-                    localStorage.removeItem("msisdn");
-
-                    alert(data.message || "Unsubscribed successfully.");
-
-                    updateSubscriptionButton();
-
-                } catch (error) {
-
-                    console.error("Unsubscribe Error:", error);
-
-                    alert("Something went wrong. Please try again.");
-
-                    buttons.forEach((btn) => {
-                        if (btn) {
-                            btn.disabled = false;
-                            btn.textContent = "Unsubscribe";
-                        }
-                    });
                 }
+            );
+
+
+            return;
+        }
+
+
+        /*
+         * ========================================================
+         * UNSUBSCRIBE SUCCESS
+         * ========================================================
+         */
+
+
+        /*
+         * Clear local authentication
+         */
+        localStorage.removeItem(
+            "auth_token"
+        );
+
+        localStorage.removeItem(
+            "msisdn"
+        );
+
+
+        console.log(
+            "Local subscription data removed"
+        );
+
+
+        /*
+         * Hide content
+         */
+        hideMainContent();
+
+
+        /*
+         * Show subscription page
+         */
+        showSubscriptionBanner();
+
+
+        /*
+         * Update buttons
+         */
+        updateSubscriptionButton();
+
+
+        alert(
+            data.message ||
+            "Unsubscribed successfully."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Unsubscribe Error:",
+            error
+        );
+
+
+        alert(
+            "Something went wrong. Please try again."
+        );
+
+
+        /*
+         * Restore buttons
+         */
+        buttons.forEach(
+            function (btn) {
+
+                if (btn) {
+
+                    btn.disabled =
+                        false;
+
+                    btn.textContent =
+                        "Unsubscribe";
+
+                }
+
             }
-        </script>
+        );
+    }
+}
+
+
+/* ============================================================
+   HELPER:
+   CHECK WHETHER USER HAS LOCAL AUTH
+   ============================================================ */
+
+function isSubscribedLocally() {
+
+    const token =
+        localStorage.getItem(
+            "auth_token"
+        );
+
+    const msisdn =
+        localStorage.getItem(
+            "msisdn"
+        );
+
+
+    return !!(
+        token &&
+        msisdn
+    );
+}
+
+
+/* ============================================================
+   OPTIONAL:
+   PROTECT GAME ACCESS
+   ============================================================ */
+
+function requireSubscription(
+    callback
+) {
+
+    const token =
+        localStorage.getItem(
+            "auth_token"
+        );
+
+    const msisdn =
+        localStorage.getItem(
+            "msisdn"
+        );
+
+
+    if (!token || !msisdn) {
+
+        console.warn(
+            "Subscription required"
+        );
+
+        showSubscriptionBanner();
+
+        hideMainContent();
+
+        return;
+    }
+
+
+    /*
+     * User has subscription information
+     */
+    if (
+        typeof callback ===
+        "function"
+    ) {
+
+        callback();
+
+    }
+}
+
+
+/* ============================================================
+   DEBUG FUNCTION
+   ============================================================ */
+
+function debugSubscription() {
+
+    console.log(
+        "================================="
+    );
+
+    console.log(
+        "SUBSCRIPTION DEBUG"
+    );
+
+    console.log(
+        "================================="
+    );
+
+    console.log(
+        "auth_token:",
+        localStorage.getItem(
+            "auth_token"
+        )
+    );
+
+    console.log(
+        "msisdn:",
+        localStorage.getItem(
+            "msisdn"
+        )
+    );
+
+    console.log(
+        "isSubscribed:",
+        isSubscribedLocally()
+    );
+
+    console.log(
+        "subscriptionBanner:",
+        document.getElementById(
+            "subscriptionBanner"
+        )
+    );
+
+    console.log(
+        "mainContent:",
+        document.getElementById(
+            "mainContent"
+        )
+    );
+
+    console.log(
+        "================================="
+    );
+}
+</script>
 </body>
 
 </html>

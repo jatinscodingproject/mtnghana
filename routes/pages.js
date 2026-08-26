@@ -48,6 +48,7 @@ router.get("/redirect", async (req, res) => {
 
         switch (String(status)) {
             case "200":
+                console.log("I AM here")
                 allowLogin = true;
                 message = "Subscription successful.";
                 break;
@@ -102,7 +103,7 @@ router.get("/redirect", async (req, res) => {
                     expiresIn: "15m"
                 }
             );
-
+            console.log('token' , token)
             return res.redirect(
                 `https://mobile.arenaxpro.com?token=${encodeURIComponent(token)}&msisdn=${encodeURIComponent(msisdn)}`
             );
