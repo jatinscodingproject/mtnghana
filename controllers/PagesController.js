@@ -38,4 +38,17 @@ exports.loginPage = async(req, res) => {
     }
 };
 
+exports.termsPage = async(req, res) => {
+    try {
+        res.render("pages/terms", {
+            title: "Terms Page",
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).render("pages/error", {
+            message: "Something went wrong!",
+        });
+    }
+};
+
 

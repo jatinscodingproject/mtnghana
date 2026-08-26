@@ -45,7 +45,8 @@
             }
             
             h1,
-            h2 {
+            h2,
+            h3 {
                 color: #ff6b00;
                 margin-bottom: 12px;
             }
@@ -67,72 +68,43 @@
 
     <!-- NAVBAR -->
     <nav class="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-sm border-b border-white/10">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-
-            <!-- Logo -->
-            <a href="/" class="flex items-center">
-                <span class="text-white font-bold text-2xl">arena</span>
-                <span class="text-orange-500 font-bold text-2xl">X</span>
-                <span class="text-orange-500 font-bold text-2xl">pro</span>
-            </a>
-
-            <!-- Mobile Menu Button -->
-            <button class="md:hidden text-white focus:outline-none" id="mobileBtn">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
-
-            <!-- Desktop Menu -->
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="/" class="text-white hover:text-[#ff6b00] transition">Home</a>
-                <a href="/#casual-games" class="text-white hover:text-[#ff6b00] transition">Casual Games</a>
-                <a href="/faq" class="text-white hover:text-[#ff6b00] transition">Help</a>
-                <a href="/terms" class="text-white hover:text-[#ff6b00] transition">Terms</a>
-                <a href="/privacy" class="text-white hover:text-[#ff6b00] transition">Privacy</a>
-
-                <button id="loginBtn" onclick="window.location.href='/login'" class="px-4 py-2 bg-orange-600 text-white rounded-lg">
-                        Login
+            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                <a href="#home" class="flex items-center">
+                    <span class="text-white font-bold text-2xl">arena</span>
+                    <span class="text-orange-500 font-bold text-2xl">X</span>
+                    <span class="text-orange-500 font-bold text-2xl">pro</span>
+                </a>
+                <button class="md:hidden text-white focus:outline-none" id="mobileBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-white hover:text-[#ff6b00] transition">Home</a>
+                    <a href="#casual-games" class="text-white hover:text-[#ff6b00] transition">Casual Games</a>
+                    <a href="/terms" class="text-white hover:text-[#ff6b00] transition">Terms And Conditions</a>
+                    <button id="subscribeBtn" onclick="subscribeNow()"
+                        class="px-4 py-2 bg-orange-600 text-white rounded">
+                        Subscribe Now
                     </button>
-                <div id="accountDropdown" class="hidden flex-col gap-2 relative">
-                    <button class="px-4 py-2 bg-gray-700 text-white rounded-lg">
-                            My Account ▾
-                        </button>
-
-                    <div class="absolute mt-2 bg-gray-800 text-white rounded-lg shadow-lg p-3 w-40 hidden" id="dropdownMenu">
-                        <button onclick="goToAccount()" class="w-full text-left py-2 hover:text-orange-400">My Account</button>
-                        <button onclick="logoutUser()" class="w-full text-left py-2 hover:text-orange-400">Logout</button>
-                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="mobileMenu" class="hidden md:hidden bg-black/70 backdrop-blur-md border-t border-white/10">
-            <div class="flex flex-col text-white p-4 space-y-3">
+            <div id="mobileMenu" class="hidden md:hidden bg-black/70 backdrop-blur-md border-t border-white/10">
+                <div class="flex flex-col text-white p-4 space-y-3">
 
-                <a href="/" class="hover:text-[#ff6b00]">Home</a>
-                <a href="/#casual-games" class="hover:text-[#ff6b00]">Casual Games</a>
-                <a href="/faq" class="hover:text-[#ff6b00]">Help</a>
-                <a href="/terms" class="hover:text-[#ff6b00]">Terms & Conditions</a>
-                <a href="/privacy" class="hover:text-[#ff6b00]">Privacy Policy</a>
-
-                <button id="mobileLoginBtn" onclick="window.location.href='/login'" class="mt-2 px-4 py-2 bg-orange-600 rounded-lg">
-                        Login
+                    <a href="#home" class="hover:text-[#ff6b00]">Home</a>
+                    <a href="#casual-games" class="hover:text-[#ff6b00]">Casual Games</a>
+                    <a href="/terms" class="text-white hover:text-[#ff6b00] transition">Terms And Conditions</a>
+                    <button id="subscribeBtn" onclick="subscribeNow()"
+                        class="px-4 py-2 bg-orange-600 text-white rounded">
+                        Subscribe Now
                     </button>
-
-                <div id="mobileAccountBox" class="hidden flex flex-col gap-2 mt-3">
-                    <button onclick="goToAccount()" class="w-full text-left py-2 hover:text-orange-400">
-                            My Account
-                        </button>
-                    <button onclick="logoutUser()" class="mt-2 px-4 py-2 bg-orange-600 rounded-lg">
-                            Logout
-                        </button>
                 </div>
             </div>
-        </div>
-    </nav>
+        </nav>
 
     <div class="terms-box">
         <div class="text-center mb-6">
@@ -140,104 +112,299 @@
             <span class="text-orange-500 font-bold text-4xl">Xpro</span>
         </div>
 
-        <h1 class="text-xl font-bold mb-4">Terms & Conditions</h1>
+        <p><strong>Effective Date:</strong> 25th August 2026</p>
 
-        <p>These Terms and Conditions govern the use and sale of services and products offered by Arbees World powered by Game Centric (“ArenaXPro”). By accessing or using our services, including purchasing or subscribing, you agree to be bound by these
-            Terms.
-        </p>
+        <p>These Terms and Conditions ("Terms") govern your access to and use of the ArenaX Pro a Casual gaming and Esport service (the "Service") provided by <strong>Scancom PLC, trading as MTN Ghana ("MTN Ghana", "MTN", "we", "us" or "our")</strong>, together with its authorised technology, content, gaming and service partners.</p>
 
-        <h2>1. General Provisions</h2>
-        <p><strong>1.1 Eligibility:</strong> You must be of legal age or have guardian consent.</p>
-        <p><strong>1.2 Acceptance:</strong> Using ArenaXPro indicates acceptance of these Terms and the Privacy Policy.</p>
+        <p>By accessing, subscribing to, registering for, or participating in the Service, including any games, esports challenges, tournaments, competitions, subscriptions, rewards or related content, you acknowledge that you have read, understood and agreed to these Terms.</p>
+        <p>If you do not agree with these Terms, you should not subscribe to, access or participate in the Service.</p>
 
-        <h2>2. Services & Products</h2>
-        <p><strong>2.1 Description:</strong> ArenaXPro offers digital content, games, virtual items, and premium features.</p>
-        <p><strong>2.2 Availability:</strong> Varies by region and subscription type.</p>
-        <p><strong>2.3 Pricing:</strong> Prices may change without notice.</p>
-
-        <h2>3. Payments & Billing</h2>
-        <p><strong>3.1 Methods:</strong> Daily, weekly, and monthly billing via Mobile Money & Airtime.</p>
-        <p><strong>3.2 Authorization:</strong> You authorize recurring charges.</p>
-        <p><strong>3.3 Recurring Payments:</strong> Auto-renew until cancelled.</p>
-
-        <h2>Refund Policy</h2>
-        <p><strong>3.4 Eligibility:</strong> Unauthorized purchases, duplicates, validated issues.</p>
-        <p><strong>3.4.2 Window:</strong> Refund requests must be submitted within 3 days.</p>
-        <p><strong>3.4.3 Valid Reasons:</strong> Fraudulent charges, duplicates, etc.</p>
-        <p><strong>3.4.5 Non-refundable:</strong> Change of mind, expired subscription, excessive usage.</p>
-
-        <h2>4. Intellectual Property</h2>
-        <p>ArenaXPro owns all copyrights, trademarks, and digital assets.</p>
-
-        <h2>5. Prohibited Conduct</h2>
+        <h2>1. GENERAL PROVISIONS</h2>
+        <h3>1.1 Eligibility</h3>
+        <p>The Service is available to eligible MTN Ghana customers who meet the applicable requirements for participation.</p>
+        <p>Unless otherwise specified for a particular casual game, competition, tournament, challenge or promotion:</p>
         <ul>
-            <li>Hacking, cheating, exploiting bugs</li>
-            <li>Harassment or abusive behavior</li>
-            <li>Sharing login details</li>
+            <li>Participants must be at least 18 years of age to receive cash or other monetary prizes in their own name.</li>
+            <li>Participants below 18 years may participate where expressly permitted by the applicable competition rules, subject to any required parental or guardian consent.</li>
+            <li>A parent or legal guardian may be required to receive a prize on behalf of a participant below the applicable age.</li>
+            <li>Participants must provide accurate and complete information when registering for the Service or participating in a competition.</li>
+        </ul>
+        <p>MTN Ghana reserves the right to verify the age, identity, eligibility and authenticity of any participant.</p>
+
+        <h3>1.2 Acceptance of Terms</h3>
+        <p>By subscribing to or using the Service, you confirm that:</p>
+        <ul>
+            <li>You have read and understood these Terms;</li>
+            <li>You agree to comply with these Terms and any additional rules applicable to a particular game, challenge, tournament or promotion;</li>
+            <li>You agree to MTN Ghana's applicable Privacy Policy; and</li>
+            <li>You consent to the processing of your personal information as required to provide, administer and improve the Service, subject to applicable law.</li>
         </ul>
 
-        <h2>6. Termination</h2>
-        <p>Accounts may be terminated for violations, fraud, or misuse.</p>
-
-        <h2>7. Disclaimer of Warranties</h2>
-        <p>ArenaXPro is provided “as-is” with no guarantees or warranties.</p>
-
-        <h2>8. Limitation of Liability</h2>
-        <p>No liability for indirect or consequential damages.</p>
-
-        <h2>9. Governing Law</h2>
-        <p>Jurisdiction: UAE, South Africa, Ghana, and regions where ArenaXPro operates.</p>
-
-        <h2>10. Payment Eligibility</h2>
-        <p>Must be 18+ or have verified guardian approval.</p>
-
-        <h2>11. General Terms</h2>
-        <p>Users must download required games and are responsible for data usage costs.</p>
-
-        <h2>12. Age Restrictions</h2>
-        <p>Users must comply with content age guidelines.</p>
-
-        <h2>13. Modification of Terms</h2>
-        <p>Terms may be updated anytime; continued use indicates acceptance.</p>
-
-        <h2>14. Suspension or Termination</h2>
-        <p>No refunds for suspended or banned accounts.</p>
-
-        <h2>15. Liability Summary</h2>
-        <p>No responsibility for outages, decisions based on content, or misuse.</p>
-
-        <h2>16. Indemnification</h2>
-        <p>Users must indemnify ArenaXPro for violations or misuse.</p>
-
-        <h2>17. Community Rules</h2>
-        <p>No harmful, offensive, or spam content allowed.</p>
-
-        <h2>18. User Conduct</h2>
+        <h2>2. DESCRIPTION OF THE SERVICE</h2>
+        <h3>2.1 Service Description</h3>
+        <p>ArenaX Pro may provide access to a range of gaming and esports-related services on its platform, including, but not limited to:</p>
         <ul>
-            <li>No illegal activities</li>
-            <li>No hacking or disruption</li>
-            <li>No sharing credentials</li>
+            <li>Casual games (HTML);</li>
+            <li>Esports games and competitions;</li>
+            <li>Daily, weekly or monthly Esport gaming challenges;</li>
+            <li>Tournaments and competitions;</li>
+            <li>Leaderboards and rankings;</li>
+            <li>Gaming-related content;</li>
+            <li>Quests and missions where applicable;</li>
+            <li>Rewards and prizes where applicable;</li>
+            <li>Promotional competitions where applicable;</li>
+            <li>Gaming events where applicable; and</li>
+            <li>Other digital gaming and entertainment experiences.</li>
+        </ul>
+        <p>The specific features available may change from time to time.</p>
+
+        <h3>2.2 Third-Party Games and Content</h3>
+        <p>Certain games, esports titles, content and services may be provided by third-party publishers, developers, licensors or technology partners.</p>
+        <p>Such third-party games may be subject to additional terms, conditions, privacy policies, age restrictions and rules imposed by the relevant game publisher.</p>
+        <p>Participants are responsible for complying with the applicable rules of each game publisher.</p>
+        <p>For each tournament or Challenge rules specific to the publisher’s title or game format may apply and this shall be available on the ArenaX Pro service portal.</p>
+
+        <h3>2.3 Service Availability</h3>
+        <p>The availability of particular games, content, challenges, tournaments or features may vary depending on:</p>
+        <ul>
+            <li>Your location;</li>
+            <li>Your MTN Ghana account or customer type;</li>
+            <li>Your device;</li>
+            <li>Your operating system;</li>
+            <li>Network availability;</li>
+            <li>Game publisher requirements;</li>
+            <li>Subscription type; and</li>
+            <li>Other technical or commercial requirements.</li>
+        </ul>
+        <p>MTN Ghana does not guarantee that every game, title, feature or tournament will be available at all times.</p>
+
+        <h2>3. SUBSCRIPTIONS AND PRICING</h2>
+        <h3>3.1 Subscription Plans</h3>
+        <p>The Service may be offered through different subscription plans, including:</p>
+        <ul><li>Daily subscription;</li><li>Weekly subscription;</li><li>Monthly subscription.</li></ul>
+        <p>The applicable price for each subscription will be communicated to you before or at the time of subscription.</p>
+        <p>The subscription paid provides you to access to the ArenaX Pro platform where all Casual Games, Esport Challenges and Tournaments can be played for FREE along with the all the features offered on the ArenaX Pro portal.</p>
+
+        <h3>3.2 Pricing</h3>
+        <p><strong>Daily subscription is priced at 1.50 Ghana Shilling.</strong></p>
+        <p>The service is auto renewal / recurring billing. That is, the subscriber once subscribed shall continue to be billed daily until such time as the subscriber unsubscribes from the service.</p>
+        <p>All applicable charges will be communicated through the relevant MTN Ghana channels or Service platform.</p>
+        <p>MTN Ghana reserves the right to change subscription prices, provided that any changes are communicated in accordance with applicable law and regulatory requirements.</p>
+
+        <h3>3.3 Subscription Activation</h3>
+        <p>Your subscription becomes active once the applicable subscription request has been successfully processed and the applicable charge has been deducted or otherwise successfully collected.</p>
+
+        <h3>3.4 Recurring Subscription</h3>
+        <p>Unless otherwise stated, subscriptions may automatically renew at the applicable frequency until cancelled.</p>
+        <p>By subscribing to a recurring service, you authorise MTN Ghana and/or its authorised billing partner to deduct the applicable subscription fee from your available MTN account balance or other supported payment method.</p>
+
+        <h3>3.5 Cancellation</h3>
+        <p>You may cancel your subscription using the cancellation method communicated by MTN Ghana for the Service.</p>
+        <p>Cancellation will prevent future subscription charges, subject to the applicable cancellation rules.</p>
+        <p>Where applicable, cancellation may not result in a refund of a subscription charge that has already been successfully processed.</p>
+
+        <h2>4. PAYMENT AND BILLING</h2>
+        <h3>4.1 Payment Methods</h3>
+        <p>Depending on the Service, payment may be made using supported MTN Ghana payment methods, which may include:</p>
+        <ul><li>Airtime;</li><li>MTN Mobile Money ("MoMo");</li><li>Other approved MTN Ghana payment channels; or</li><li>Other payment methods expressly made available by MTN Ghana.</li></ul>
+
+        <h3>4.2 Authorisation to Charge</h3>
+        <p>By subscribing to the Service, you authorise MTN Ghana and/or its authorised service provider to charge the applicable subscription fee using the selected payment method.</p>
+
+        <h3>4.3 Insufficient Balance</h3>
+        <p>Where the applicable subscription charge cannot be fully collected due to insufficient funds or airtime, MTN Ghana may, where technically and commercially applicable, attempt to collect the charge again or apply a reduced or partial charge.</p>
+        <p>A subscription may remain active or renew only where the applicable billing transaction is successfully completed.</p>
+
+        <h3>4.4 Billing Records</h3>
+        <p>MTN Ghana may retain records of transactions, subscriptions and payments for operational, customer service, accounting, audit, regulatory and legal purposes.</p>
+
+        <h2>5. REFUNDS</h2>
+        <h3>5.1 Refund Policy</h3>
+        <p>Refunds may be considered in accordance with MTN Ghana's applicable refund policy and applicable Ghanaian law.</p>
+        <h3>5.2 Refund Requests</h3>
+        <p>Refund requests should be submitted through the designated MTN Ghana customer support channels within <strong>three (3) days</strong> of the relevant transaction, unless a longer period is required by applicable law or otherwise determined by MTN Ghana.</p>
+        <h3>5.3 Valid Refund Circumstances</h3>
+        <p>A refund may be considered where:</p>
+        <ul><li>An unauthorised transaction occurred, subject to appropriate verification;</li><li>The same service or item was charged more than once due to a duplicate transaction;</li><li>A technical or billing error resulted in an incorrect charge; or</li><li>Another circumstance exists where a refund is required under applicable law.</li></ul>
+        <h3>5.4 Refund Review</h3>
+        <p>MTN Ghana may require information necessary to investigate a refund request, including:</p>
+        <ul><li>MTN mobile number;</li><li>Transaction details;</li><li>Date and time of transaction;</li><li>Subscription or service details; and</li><li>Any other information reasonably required to verify the claim.</li></ul>
+        <h3>5.5 Non-Refundable Circumstances</h3>
+        <p>Subject to applicable law, refunds will generally not be provided where:</p>
+        <ul><li>You simply change your mind;</li><li>You have used or consumed the purchased service or content;</li><li>You did not check the device or game requirements before participating;</li><li>You failed to maintain sufficient data or network connectivity;</li><li>Your account was suspended or terminated because of a violation of these Terms; or</li><li>The transaction was validly completed and the Service was made available to you.</li></ul>
+        <h3>5.6 Refund Method</h3>
+        <p>Where a refund is approved, MTN Ghana will determine the appropriate refund method in accordance with its applicable procedures and the payment method originally used, subject to technical and regulatory requirements.</p>
+
+        <h2>6. ESPORTS, CHALLENGES AND TOURNAMENTS</h2>
+        <h3>6.1 Registration Requirements</h3>
+        <p>To participate in an esports challenge or tournament, you may be required to:</p>
+        <ul><li>Register on the relevant gaming platform;</li><li>Download the applicable game;</li><li>Create or possess a valid gamer/player ID;</li><li>Register using the correct player ID;</li><li>Provide accurate participant information; and</li><li>Comply with the rules of the applicable game publisher and tournament.</li></ul>
+        <h3>6.2 Game Download and Registration</h3>
+        <p>Participants are responsible for downloading the relevant game and completing any required registration with the game publisher before participating.</p>
+        <p>This may require the use of mobile data or Wi-Fi.</p>
+        <p>Participants are responsible for all data costs incurred in downloading, registering for and playing games unless MTN Ghana expressly states otherwise.</p>
+        <p><strong>NOTE:</strong> ArenaX Pro provides the challenges and Tournaments for a Publisher or Esport Title holder.</p>
+        <p>The Gamer will have to register for the Tournament or Challenge on the portal.</p>
+        <p>However, the gamer’s will PLAY the game on the publisher app or gaming portal in the lobby as per the instructions on our platform following the terms and conditions and format as stated on our service portal.</p>
+        <p>LeaderBoard shall be updated in a timeous manner once the game has been completed.</p>
+
+        <h3>6.3 Data Usage</h3>
+        <p>Esports and gaming activities may consume significant amounts of mobile data.</p>
+        <p>Participants are responsible for ensuring that they have sufficient data, airtime, device capacity, battery power and network connectivity to participate.</p>
+        <p>MTN Ghana or ArenaX Pro will not be responsible for:</p>
+        <ul><li>Data consumed while downloading or playing games;</li><li>Loss of participation caused by insufficient data;</li><li>Disconnection caused by network or device limitations;</li><li>Inability to join a challenge or tournament due to failure to download or register for the relevant game; or</li><li>Any other costs incurred by the participant in accessing or playing a game.</li></ul>
+
+        <h3>6.4 Tournament Rules</h3>
+        <p>Each tournament, competition or challenge may have additional rules covering:</p>
+        <ul><li>Eligibility;</li><li>Registration;</li><li>Game format;</li><li>Match format;</li><li>Scoring;</li><li>Leaderboards;</li><li>Qualification;</li><li>Disqualification;</li><li>Prizes;</li><li>Deadlines; and</li><li>Other participation requirements.</li></ul>
+        <p>Such rules form part of these Terms for the relevant tournament or competition.</p>
+
+        <h3>6.5 Results and Leaderboards</h3>
+        <p>MTN Ghana and/or its authorised tournament partner may determine rankings and results based on the applicable game and tournament rules.</p>
+        <p>In the event of a dispute concerning scores or rankings, MTN Ghana and/or the authorised tournament organiser may investigate the relevant records and make a final determination, subject to applicable law.</p>
+
+        <h2>7. PRIZES AND PAYOUTS (Where applicable)</h2>
+        <h3>7.1 Prize Eligibility</h3>
+        <p>Participants must satisfy all applicable eligibility and verification requirements before a prize can be paid.</p>
+        <p>Prize eligibility may include:</p>
+        <ul><li>Meeting the minimum age requirement;</li><li>Being a verified MTN Ghana customer;</li><li>Providing accurate registration information;</li><li>Successfully completing identity verification where required;</li><li>Complying with the applicable competition rules; and</li><li>Passing applicable anti-fraud and validation checks.</li></ul>
+        <h3>7.2 Verification</h3>
+        <p>MTN Ghana may request information or documentation reasonably necessary to verify a winner's identity and eligibility.</p>
+        <p>This may include:</p>
+        <ul><li>Valid identification;</li><li>MTN Ghana mobile number;</li><li>Contact information;</li><li>Mobile Money account information;</li><li>Other payment details; and</li><li>Other documentation reasonably required for verification.</li></ul>
+        <h3>7.3 Prize Payment</h3>
+        <p>Where applicable, prizes may be paid through supported payment methods, which may include:</p>
+        <ul><li>MTN Mobile Money;</li><li>Airtime credit; or</li><li>Another payment method communicated by MTN Ghana.</li></ul>
+        <h3>7.4 Payment Processing</h3>
+        <p>Prize payments may take up to <strong>fourteen (14) days</strong> following successful completion of the required verification process.</p>
+        <p>MTN Ghana will endeavour, where reasonably possible, to process verified prize payments within <strong>seven (7) days</strong>.</p>
+        <p>Actual processing times may vary depending on verification, payment processing, banking or Mobile Money procedures, weekends, public holidays and other circumstances beyond MTN Ghana's reasonable control.</p>
+        <h3>7.5 Prize Payment Fees</h3>
+        <p>Where permitted by applicable law and the applicable competition rules, transaction or payment-related fees may be deducted from a prize.</p>
+        <p>Any applicable deductions will be communicated where required.</p>
+        <h3>7.6 Unclaimed or Invalid Prizes</h3>
+        <p>MTN Ghana reserves the right, subject to applicable law and the rules of the relevant promotion or competition, to:</p>
+        <ul><li>Disqualify a winner who fails verification;</li><li>Withhold a prize where fraud or manipulation is suspected;</li><li>Require additional verification; or</li><li>Reallocate or otherwise deal with an unclaimed prize.</li></ul>
+
+        <h2>8. ANTI-FRAUD AND FAIR PLAY</h2>
+        <h3>8.1 Fair Play</h3>
+        <p>Participants must compete fairly and honestly.</p>
+        <p>The following are prohibited:</p>
+        <ul><li>Cheating;</li><li>Hacking;</li><li>Use of bots or automated software;</li><li>Exploitation of bugs or vulnerabilities;</li><li>Manipulation of scores;</li><li>Collusion;</li><li>Account sharing;</li><li>Use of unauthorised third-party software;</li><li>Identity fraud;</li><li>Multiple accounts created to obtain an unfair advantage; or</li><li>Any other conduct that undermines the integrity of the Service or competition.</li></ul>
+        <h3>8.2 Fraud Prevention</h3>
+        <p>MTN Ghana and/or its authorised partners may use reasonable verification and fraud-prevention measures to protect the integrity of the Service.</p>
+        <p>This may include reviewing:</p>
+        <ul><li>Account information;</li><li>Device information;</li><li>Player IDs;</li><li>Game results;</li><li>Registration information;</li><li>Transaction records; and</li><li>Other relevant information permitted by applicable law.</li></ul>
+        <h3>8.3 Disqualification</h3>
+        <p>MTN Ghana may disqualify a participant where there are reasonable grounds to believe that the participant:</p>
+        <ul><li>Has breached these Terms;</li><li>Has breached tournament rules;</li><li>Has engaged in fraudulent or abusive activity;</li><li>Has manipulated a result;</li><li>Has provided false information; or</li><li>Has attempted to obtain an unfair advantage.</li></ul>
+
+        <h2>9. INTELLECTUAL PROPERTY</h2>
+        <h3>9.1 Ownership</h3>
+        <p>All intellectual property rights in the MTN Ghana ArenaX Pro Service, including trademarks, logos, software, platform interfaces, graphics, text and other content, belong to MTN Ghana, its licensors or authorised partners.</p>
+        <p>Third-party games and game-related intellectual property remain the property of the relevant publishers, developers or licensors.</p>
+        <h3>9.2 Limited Licence</h3>
+        <p>Subject to these Terms, you are granted a limited, non-exclusive, non-transferable and revocable licence to access and use the Service for personal and non-commercial purposes.</p>
+        <p>You may not copy, modify, reproduce, distribute, sell, sublicense or commercially exploit the Service or its content without prior written authorisation.</p>
+        <h3>9.3 User-Generated Content</h3>
+        <p>Where the Service permits users to upload, submit or share content, you retain ownership of your content, subject to any rights granted to MTN Ghana and ArenaX Pro, its authorised partners or the relevant platform provider.</p>
+        <p>By submitting content, you grant the relevant parties a non-exclusive, royalty-free licence to use, reproduce, display and distribute the content for the purposes of operating, promoting and administering the Service, subject to applicable law.</p>
+
+        <h2>10. PROHIBITED CONDUCT</h2>
+        <p>You agree not to:</p>
+        <ul><li>Use the Service for unlawful purposes;</li><li>Hack, interfere with or attempt to compromise the Service;</li><li>Circumvent security or access controls;</li><li>Use cheats, bots or unauthorised software;</li><li>Harass, threaten or abuse other users;</li><li>Submit hateful, racist, obscene, defamatory or threatening content;</li><li>Infringe the intellectual property rights of another person;</li><li>Distribute spam or unsolicited commercial communications;</li><li>Create, distribute or promote unlawful content;</li><li>Impersonate another person;</li><li>Create fraudulent accounts;</li><li>Share account credentials;</li><li>Manipulate competition results; or</li><li>Use the Service for commercial purposes without authorisation.</li></ul>
+
+        <h2>11. ACCOUNT, PASSWORD AND PIN SECURITY</h2>
+        <h3>11.1 Account Security</h3>
+        <p>You are responsible for maintaining the confidentiality and security of your account information, passwords, PINs and other authentication credentials.</p>
+        <h3>11.2 Unauthorised Access</h3>
+        <p>You must immediately notify MTN Ghana if you suspect that your account, password or PIN has been compromised.</p>
+        <p>You remain responsible for activity carried out using your account or credentials to the extent permitted by applicable law.</p>
+        <p>MTN Ghana will not be responsible for unauthorised access resulting from your failure to safeguard your credentials.</p>
+        <h3>11.3 Account Sharing</h3>
+        <p>You must not share your account credentials with another person where account sharing is prohibited by the Service or applicable competition rules.</p>
+
+        <h2>12. SUSPENSION AND TERMINATION</h2>
+        <h3>12.1 Suspension</h3>
+        <p>MTN Ghana may suspend access to the Service where reasonably necessary, including where:</p>
+        <ul><li>These Terms have been breached;</li><li>Fraud or abuse is suspected;</li><li>A participant has breached competition rules;</li><li>Required verification has not been completed;</li><li>Technical or security issues arise; or</li><li>Suspension is required by law or a competent authority.</li></ul>
+        <h3>12.2 Termination</h3>
+        <p>MTN Ghana may terminate access to the Service in accordance with these Terms and applicable law.</p>
+        <p>Termination or suspension may result in loss of access to certain Service features, subject to any rights the participant may have under applicable law.</p>
+
+        <h2>13. SERVICE AVAILABILITY AND DISCLAIMER</h2>
+        <h3>13.1 Service Availability</h3>
+        <p>MTN Ghana will use reasonable efforts to maintain the Service but does not guarantee that the Service will always be:</p>
+        <ul><li>Available;</li><li>Uninterrupted;</li><li>Error-free;</li><li>Secure; or</li><li>Compatible with every device or game title.</li></ul>
+        <h3>13.2 Third-Party Services</h3>
+        <p>MTN Ghana and ArenaX Pro is not responsible for failures, changes, interruptions or limitations caused by third-party game publishers, application stores, payment providers, platforms or other service providers, except to the extent required by applicable law.</p>
+        <h3>13.3 Device Compatibility</h3>
+        <p>The Service may support Android and iOS devices. However, specific games may have additional hardware, software or operating-system requirements.</p>
+        <p>It is the participant's responsibility to verify that their device meets the requirements of the applicable game before participating.</p>
+
+        <h2>14. NETWORK AND FORCE MAJEURE</h2>
+        <p>MTN Ghana will not be liable for delays, interruptions or failures caused by circumstances beyond its reasonable control, including:</p>
+        <ul><li>Network failures;</li><li>Internet outages;</li><li>Power interruptions;</li><li>Acts of God;</li><li>Natural disasters;</li><li>Government action or regulation;</li><li>War or civil unrest;</li><li>Cyberattacks;</li><li>Third-party service failures;</li><li>Game publisher failures;</li><li>Payment-system failures; or</li><li>Other circumstances beyond MTN Ghana's reasonable control.</li></ul>
+
+        <h2>15. LIMITATION OF LIABILITY</h2>
+        <p>To the maximum extent permitted by applicable law, MTN Ghana or ArenaX Pro will not be liable for indirect, incidental, consequential or special losses arising from your use of the Service.</p>
+        <p>Nothing in these Terms excludes or limits liability that cannot legally be excluded or limited under applicable Ghanaian law.</p>
+
+        <h2>16. DATA PROTECTION AND PRIVACY</h2>
+        <p>MTN Ghana may collect and process personal information necessary to:</p>
+        <ul><li>Provide the Service;</li><li>Process subscriptions and payments;</li><li>Register participants;</li><li>Administer competitions;</li><li>Verify winners;</li><li>Prevent fraud;</li><li>Provide customer support;</li><li>Improve the Service;</li><li>Comply with legal and regulatory obligations; and</li><li>Communicate relevant Service information.</li></ul>
+        <p>Personal information will be processed in accordance with applicable Ghanaian data protection laws and MTN Ghana's applicable Privacy Policy.</p>
+        <p>Where third-party gaming or technology partners are involved, information may be shared with such partners where necessary to provide or administer the Service and as permitted by applicable law.</p>
+
+        <h2>17. CUSTOMER SUPPORT</h2>
+        <p>For questions, complaints, subscription issues, billing matters, refund requests or other Service-related enquiries, customers may contact MTN Ghana through its designated customer support channels.</p>
+        <p>Customers should provide sufficient information to enable MTN Ghana to investigate the matter, including where relevant:</p>
+        <ul><li>MTN mobile number;</li><li>Transaction reference;</li><li>Date and time of transaction;</li><li>Subscription details; and</li><li>Description of the issue.</li></ul>
+
+        <h2>18. CHANGES TO THESE TERMS</h2>
+        <p>MTN Ghana may amend, update or modify these Terms from time to time.</p>
+        <p>Where required by applicable law or regulation, MTN Ghana will provide appropriate notice of material changes.</p>
+        <p>Continued use of the Service after the effective date of the revised Terms constitutes acceptance of the revised Terms, to the extent permitted by law.</p>
+
+        <h2>19. GOVERNING LAW AND DISPUTE RESOLUTION</h2>
+        <h3>19.1 Governing Law</h3>
+        <p>These Terms shall be governed by and interpreted in accordance with the laws of the <strong>Republic of Ghana</strong>, subject to any mandatory consumer or other statutory rights applicable to the customer.</p>
+        <h3>19.2 Dispute Resolution</h3>
+        <p>Any dispute relating to these Terms or the Service should, where reasonably possible, first be referred to MTN Ghana's customer support or designated complaints process for resolution.</p>
+        <p>Where a dispute cannot be resolved through the applicable complaints process, either party may pursue any remedy available under the laws of Ghana.</p>
+        <p>Nothing in these Terms limits any statutory right of a consumer to refer a complaint to a competent regulatory authority or other body where such right exists.</p>
+
+        <h2>20. GENERAL PROVISIONS</h2>
+        <h3>20.1 Entire Agreement</h3>
+        <p>These Terms, together with any applicable competition rules, promotional terms, Privacy Policy and other terms expressly incorporated into the Service, constitute the agreement governing your use of the Service.</p>
+        <h3>20.2 Severability</h3>
+        <p>If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions will continue to be effective to the extent permitted by law.</p>
+        <h3>20.3 No Waiver</h3>
+        <p>Failure by MTN Ghana to enforce any provision of these Terms does not constitute a waiver of its right to enforce that provision in the future.</p>
+        <h3>20.4 Assignment</h3>
+        <p>You may not transfer or assign your rights or obligations under these Terms without prior written consent from MTN Ghana.</p>
+        <h3>20.5 Language</h3>
+        <p>These Terms may be made available in English and/or other languages as MTN Ghana may determine. In the event of any inconsistency, the version required by applicable law or designated by MTN Ghana will apply.</p>
+
+        <h2>21. ACCEPTANCE</h2>
+        <p>By subscribing to, accessing or participating in the MTN Ghana Premium Gaming &amp; Esports Service, you acknowledge that:</p>
+        <ul>
+            <li>You have read and understood these Terms;</li>
+            <li>You agree to comply with these Terms;</li>
+            <li>You understand that gaming and esports activities may consume mobile data;</li>
+            <li>You understand that third-party game publishers may have additional rules;</li>
+            <li>You understand that prizes are subject to eligibility and verification requirements; and</li>
+            <li>You consent to the processing of information necessary to administer the Service, subject to applicable law.</li>
         </ul>
 
-        <h2>19. Platform Availability</h2>
-        <p>Downtime may occur due to maintenance or technical reasons.</p>
-
-        <h2>20. Subscription & Registration</h2>
-        <p>Subscriptions are non-transferable and require accurate information.</p>
-
-        <h2>21. Billing</h2>
-        <p>Mobile Money billing, advance payments, and tax-inclusive charges apply.</p>
-
-        <h2>22. Renewal & Cancellation</h2>
-        <p>Subscriptions auto-renew unless cancelled before billing date.</p>
-
-
-        <h2>23. Free Service </h2>
-        <p>The Esports is free accessible for free access you have to visit
-            <a href="https://arenaxpro.gamecentric.io/login">https://arenaxpro.gamecentric.io/login</a>.</p>
-
-        <br><br>
+        <p class="mt-8"><strong>MTN Ghana</strong></p>
+        <p><strong>Scancom PLC (trading as MTN Ghana)</strong></p>
+        <p><strong>Service:</strong> ArenaX Pro</p>
+        <p><strong>Effective Date:</strong> 25th August 2026</p>
+        <p><strong>Website:</strong> <a href="http://www.mobile.arenaxpro.com/" class="text-orange-400 underline">www.mobile.arenaxpro.com</a></p>
     </div>
+
+       
 
     <footer class="bg-black border-t border-gray-800 py-12 px-4 mt-10 ">
         <div class="max-w-7xl mx-auto ">
@@ -248,7 +415,7 @@
             </div>
 
             <div class="border-t border-gray-800 pt-8 text-center text-gray-400 ">
-                © <span id="currentYear "></span> arena<span style="color:#ff6b00; ">Xpro</span>. All rights reserved. Made for gamer lovers worldwide.
+                © <span id="currentYear"></span> arena<span style="color:#ff6b00; ">Xpro</span>. All rights reserved. Made for gamer lovers worldwide.
             </div>
 
         </div>
@@ -264,13 +431,13 @@
         const mobileBtn = document.getElementById("mobileBtn ");
         const mobileMenu = document.getElementById("mobileMenu ");
 
-        mobileBtn.addEventListener("click ", () => {
-            mobileMenu.classList.toggle("hidden ");
+        mobileBtn.addEventListener("click", () => {
+            mobileMenu.classList.toggle("hidden");
         });
 
-        document.addEventListener("click ", (e) => {
+        document.addEventListener("click", (e) => {
             if (!mobileBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
-                mobileMenu.classList.add("hidden ");
+                mobileMenu.classList.add("hidden");
             }
         });
     </script>
