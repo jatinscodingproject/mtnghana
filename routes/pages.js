@@ -70,14 +70,73 @@ router.get("/redirect", async (req, res) => {
             case "13":
                 message = "Consent processing failed.";
                 break;
-            case "2":
+           case "2":
             case "26":
             case "29":
             case "55":
             case "63":
-            case "111":
+            case "111": {
+                console.log("Insufficient funds status:", status);
+
+                if (!msisdn) {
+                    message = "Insufficient balance. Please recharge and try again.";
+                    break;
+                }
+
+                const latestCallback = await mtnSubscriptionCallback.findOne({
+                    where: {
+                        msisdn: String(msisdn),
+                        is_callback_received: true
+                    },
+                    order: [["createdAt", "DESC"]]
+                });
+
+                console.log("Latest callback for insufficient funds:", latestCallback);
+
+                if (latestCallback) {
+                    const callbackTime = new Date(latestCallback.createdAt);
+                    const now = new Date();
+
+                    const sameDay =
+                        callbackTime.getFullYear() === now.getFullYear() &&
+                        callbackTime.getMonth() === now.getMonth() &&
+                        callbackTime.getDate() === now.getDate();
+
+                    const differenceMinutes =
+                        Math.abs(now.getTime() - callbackTime.getTime()) /
+                        (1000 * 60);
+
+                    console.log("Callback time:", callbackTime);
+                    console.log("Difference:", differenceMinutes, "minutes");
+                    console.log("Same day:", sameDay);
+
+                    // Callback received today and within 10 minutes
+                    if (sameDay && differenceMinutes <= 10) {
+                        allowLogin = true;
+
+                        console.log(
+                            "Recent callback found. Allowing login."
+                        );
+                    } else {
+                        allowLogin = false;
+
+                        console.log(
+                            "Callback is missing or older than 10 minutes."
+                        );
+                    }
+                } else {
+                    allowLogin = false;
+
+                    console.log(
+                        "No callback found for MSISDN:",
+                        msisdn
+                    );
+                }
+
                 message = "Insufficient balance. Please recharge and try again.";
+
                 break;
+            }
             case "644":
                 message = "A subscription request already exists. Please try again later.";
                 break;
