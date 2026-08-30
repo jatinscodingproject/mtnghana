@@ -286,9 +286,6 @@
                 .getElementById("gameModal")
                 ?.classList.add("hidden");
 
-            // -----------------------------------------------
-            // Stop game iframe
-            // -----------------------------------------------
             const gameFrame =
                 document.getElementById("gameFrame");
 
@@ -300,17 +297,11 @@
                 "Your subscription is inactive. Please subscribe again."
             );
 
-            // -----------------------------------------------
-            // Start subscription flow
-            // -----------------------------------------------
             subscribeNow();
 
             return;
         }
 
-        // =====================================================
-        // 7. NO SUBSCRIPTION RECORD
-        // =====================================================
         if (
             data.code === "NO_SUBSCRIPTION"
         ) {
@@ -599,7 +590,7 @@
 
         if (window.isHE && window.msisdn) {
             consentUrl =
-                `http://20.87.33.165/Redirect` +
+                `http://98.71.49.187/Redirect` +
                 `?OfferCode=${offerCode}` +
                 `&mobileNumber=${window.msisdn}` +
                 `&redirectUrl=${redirectUrl}` +
@@ -607,7 +598,6 @@
 
             window.location.href = consentUrl;
         } else {
-            // Wi-Fi / Non-Header Enrichment
             window.location.href = "/login";
             return;
         }
