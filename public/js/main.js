@@ -14,17 +14,6 @@
     const FREE_GAME_LIMIT = 20;
     const FREE_TIME_LIMIT = 2 * 60 * 1000;
 
-    // function getFreeGameData() {
-    //     return JSON.parse(localStorage.getItem("free_game_data")) || {
-    //         gamesPlayed: 0
-    //     };
-    // }
-
-    // function updateFreeGameData(data) {
-    //     localStorage.setItem("free_game_data", JSON.stringify(data));
-    // }
-
-
 
     function changeSlide(direction) {
         const slides = document.querySelectorAll('.hero-slide');
@@ -172,25 +161,41 @@
         }
     }
 
-
    async function playGame(game) {
     const token = localStorage.getItem("auth_token");
     const msisdn = localStorage.getItem("msisdn");
 
-    // No login
+    // =====================================================
+    // 1. NO TOKEN
+    // =====================================================
     if (!token) {
+        console.log("No auth token found.");
+
         subscribeNow();
         return;
     }
 
-    // No MSISDN
+    // =====================================================
+    // 2. NO MSISDN
+    // =====================================================
     if (!msisdn) {
+        console.log("No MSISDN found. Destroying token.");
+
         localStorage.removeItem("auth_token");
+        localStorage.removeItem("msisdn");
+
+        sessionStorage.removeItem("auth_token");
+        sessionStorage.removeItem("msisdn");
+
         subscribeNow();
         return;
     }
 
     try {
+
+        // =====================================================
+        // 3. CHECK LATEST SUBSCRIPTION FROM SERVER
+        // =====================================================
         const response = await fetch(
             `/check-subscription?msisdn=${encodeURIComponent(msisdn)}`,
             {
@@ -202,42 +207,214 @@
             }
         );
 
-        const data = await response.json();
+        // =====================================================
+        // 4. HTTP AUTH ERROR
+        // =====================================================
+        if (response.status === 401) {
 
-        console.log("Subscription check:", data);
+            console.log(
+                "Token is invalid or expired."
+            );
 
-        // User is unsubscribed
-        if (
-            data.subscribed === false ||
-            data.subscription_status === "D"
-        ) {
-            // Remove login/session data
             localStorage.removeItem("auth_token");
             localStorage.removeItem("msisdn");
 
-            // Close game modal if open
-            document.getElementById("gameModal")?.classList.add("hidden");
+            sessionStorage.removeItem("auth_token");
+            sessionStorage.removeItem("msisdn");
 
-            alert("Your subscription is inactive. Please subscribe again.");
+            document
+                .getElementById("gameModal")
+                ?.classList.add("hidden");
 
-            // Start subscription flow
+            alert(
+                "Your session has expired. Please subscribe again."
+            );
+
             subscribeNow();
 
             return;
         }
 
-        // User is subscribed
-        document.getElementById("gameModal").classList.remove("hidden");
+        // =====================================================
+        // 5. PARSE RESPONSE
+        // =====================================================
+        const data = await response.json();
 
-        const gameFrame = document.getElementById("gameFrame");
+        console.log(
+            "Latest subscription check:",
+            data
+        );
 
-        gameFrame.src =
-            `https://arenaxpro.com/games/107Games/${encodeURIComponent(game)}/index.html`;
+        // Normalize status
+        const subscriptionStatus = String(
+            data.subscription_status || ""
+        )
+            .trim()
+            .toUpperCase();
+
+        // =====================================================
+        // 6. USER IS UNSUBSCRIBED
+        // Latest DB entry = D
+        // =====================================================
+        if (
+            data.subscribed === false ||
+            subscriptionStatus === "D" ||
+            data.code === "SUBSCRIPTION_DEACTIVATED"
+        ) {
+
+            console.log(
+                "Latest subscription is DEACTIVATED (D)."
+            );
+
+            console.log(
+                "Destroying authentication token..."
+            );
+
+            // -----------------------------------------------
+            // Destroy authentication
+            // -----------------------------------------------
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("msisdn");
+
+            sessionStorage.removeItem("auth_token");
+            sessionStorage.removeItem("msisdn");
+
+            // -----------------------------------------------
+            // Close game modal
+            // -----------------------------------------------
+            document
+                .getElementById("gameModal")
+                ?.classList.add("hidden");
+
+            // -----------------------------------------------
+            // Stop game iframe
+            // -----------------------------------------------
+            const gameFrame =
+                document.getElementById("gameFrame");
+
+            if (gameFrame) {
+                gameFrame.src = "about:blank";
+            }
+
+            alert(
+                "Your subscription is inactive. Please subscribe again."
+            );
+
+            // -----------------------------------------------
+            // Start subscription flow
+            // -----------------------------------------------
+            subscribeNow();
+
+            return;
+        }
+
+        // =====================================================
+        // 7. NO SUBSCRIPTION RECORD
+        // =====================================================
+        if (
+            data.code === "NO_SUBSCRIPTION"
+        ) {
+
+            console.log(
+                "No subscription record found."
+            );
+
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("msisdn");
+
+            sessionStorage.removeItem("auth_token");
+            sessionStorage.removeItem("msisdn");
+
+            document
+                .getElementById("gameModal")
+                ?.classList.add("hidden");
+
+            alert(
+                "No active subscription found. Please subscribe."
+            );
+
+            subscribeNow();
+
+            return;
+        }
+
+        // =====================================================
+        // 8. USER IS ACTIVE
+        // =====================================================
+        if (
+            data.subscribed === true &&
+            subscriptionStatus !== "D"
+        ) {
+
+            console.log(
+                "Active subscription confirmed."
+            );
+
+            console.log(
+                "Opening game:",
+                game
+            );
+
+            // -----------------------------------------------
+            // Open game modal
+            // -----------------------------------------------
+            const gameModal =
+                document.getElementById("gameModal");
+
+            if (gameModal) {
+                gameModal.classList.remove("hidden");
+            }
+
+            // -----------------------------------------------
+            // Load game
+            // -----------------------------------------------
+            const gameFrame =
+                document.getElementById("gameFrame");
+
+            if (!gameFrame) {
+                console.error(
+                    "Game iframe #gameFrame not found."
+                );
+
+                return;
+            }
+
+            gameFrame.src =
+                `https://arenaxpro.com/games/107Games/${encodeURIComponent(game)}/index.html`;
+
+            return;
+        }
+
+        // =====================================================
+        // 9. UNKNOWN RESPONSE
+        // =====================================================
+        console.warn(
+            "Unknown subscription response:",
+            data
+        );
+
+        document
+            .getElementById("gameModal")
+            ?.classList.add("hidden");
+
+        alert(
+            "Unable to verify your subscription. Please try again."
+        );
 
     } catch (error) {
-        console.error("Subscription check failed:", error);
 
-        alert("Unable to verify your subscription. Please try again.");
+        console.error(
+            "Subscription check failed:",
+            error
+        );
+
+        document
+            .getElementById("gameModal")
+            ?.classList.add("hidden");
+
+        alert(
+            "Unable to verify your subscription. Please try again."
+        );
     }
 }
 

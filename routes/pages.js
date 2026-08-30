@@ -303,16 +303,73 @@ router.post("/unsubscribe", async (req, res) => {
 
 router.get("/check-subscription", async (req, res) => {
     try {
-        let { msisdn } = req.query;
+        const authHeader = req.headers.authorization;
+
+        // ==========================================
+        // 1. CHECK TOKEN
+        // ==========================================
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                status: false,
+                subscribed: false,
+                code: "NO_TOKEN",
+                message: "Authentication token is required"
+            });
+        }
+
+        const token = authHeader.split(" ")[1];
+
+        let decoded;
+
+        try {
+            decoded = jwt.verify(
+                token,
+                process.env.JWT_SECRET
+            );
+        } catch (err) {
+
+            console.log("JWT validation error:", err.name);
+
+            if (err.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    status: false,
+                    subscribed: false,
+                    code: "TOKEN_EXPIRED",
+                    message: "Token has expired"
+                });
+            }
+
+            return res.status(401).json({
+                status: false,
+                subscribed: false,
+                code: "INVALID_TOKEN",
+                message: "Invalid token"
+            });
+        }
+
+        // ==========================================
+        // 2. GET MSISDN
+        // Prefer MSISDN from JWT
+        // ==========================================
+        let msisdn = decoded.msisdn;
+
+        // fallback to query parameter
+        if (!msisdn) {
+            msisdn = req.query.msisdn;
+        }
 
         if (!msisdn) {
             return res.status(400).json({
                 status: false,
+                subscribed: false,
+                code: "NO_MSISDN",
                 message: "MSISDN is required"
             });
         }
 
-        // Normalize MSISDN
+        // ==========================================
+        // 3. NORMALIZE MSISDN
+        // ==========================================
         msisdn = String(msisdn).trim();
 
         if (msisdn.startsWith("0")) {
@@ -322,59 +379,112 @@ router.get("/check-subscription", async (req, res) => {
         if (!/^233\d{9}$/.test(msisdn)) {
             return res.status(400).json({
                 status: false,
+                subscribed: false,
+                code: "INVALID_MSISDN",
                 message: "Invalid MSISDN format"
             });
         }
 
-        // Get ONLY the latest entry for this MSISDN
-        const latestEntry = await mtnSubscriptionCallback.findOne({
-            where: {
-                msisdn: msisdn
-            },
-            order: [
-                ["createdAt", "DESC"]
-            ]
-        });
+        // ==========================================
+        // 4. GET ONLY LATEST ENTRY
+        // ==========================================
+        const latestEntry =
+            await mtnSubscriptionCallback.findOne({
+                where: {
+                    msisdn: msisdn
+                },
+                order: [
+                    ["createdAt", "DESC"]
+                ]
+            });
 
-        console.log("Latest subscription entry:", latestEntry);
+        console.log(
+            "Latest subscription entry:",
+            latestEntry
+        );
 
-        // No entry found
+        // ==========================================
+        // 5. NO RECORD = NOT SUBSCRIBED
+        // ==========================================
         if (!latestEntry) {
+
+            console.log(
+                "No subscription record found:",
+                msisdn
+            );
+
             return res.status(200).json({
                 status: true,
                 subscribed: false,
-                message: "User is unsubscribed"
+                code: "NO_SUBSCRIPTION",
+                message: "User is not subscribed"
             });
         }
 
+        // ==========================================
+        // 6. GET LATEST STATUS
+        // ==========================================
         const subscriptionStatus = String(
             latestEntry.subscription_status || ""
         )
             .trim()
             .toUpperCase();
 
-        console.log("MSISDN:", msisdn);
-        console.log("Latest subscription_status:", subscriptionStatus);
+        console.log(
+            "MSISDN:",
+            msisdn
+        );
 
-        // D = Unsubscribed
+        console.log(
+            "LATEST subscription_status:",
+            subscriptionStatus
+        );
+
+        console.log(
+            "LATEST createdAt:",
+            latestEntry.createdAt
+        );
+
+        // ==========================================
+        // 7. LATEST ENTRY = D
+        // USER IS UNSUBSCRIBED
+        // ==========================================
         if (subscriptionStatus === "D") {
+
+            console.log(
+                "USER DEACTIVATED:",
+                msisdn
+            );
+
             return res.status(200).json({
                 status: true,
                 subscribed: false,
+                code: "SUBSCRIPTION_DEACTIVATED",
                 message: "User is unsubscribed",
-                subscription_status: "D"
+                subscription_status: "D",
+                msisdn: msisdn
             });
         }
 
-        // Active subscription
+        // ==========================================
+        // 8. ACTIVE SUBSCRIPTION
+        // ==========================================
+        console.log(
+            "USER ACTIVE:",
+            msisdn
+        );
+
         return res.status(200).json({
             status: true,
             subscribed: true,
+            code: "ACTIVE_SUBSCRIPTION",
             message: "User has an active subscription",
-            subscription_status: latestEntry.subscription_status
+            subscription_status: subscriptionStatus,
+            msisdn: msisdn
         });
 
     } catch (error) {
+
         console.error(
             "Check Subscription Error:",
             error
@@ -382,6 +492,8 @@ router.get("/check-subscription", async (req, res) => {
 
         return res.status(500).json({
             status: false,
+            subscribed: false,
+            code: "SERVER_ERROR",
             message: "Unable to check subscription status",
             error: error.message
         });
