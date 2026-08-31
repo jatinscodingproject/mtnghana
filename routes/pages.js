@@ -304,135 +304,255 @@ router.post("/unsubscribe", async (req, res) => {
 router.get("/check-subscription", async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
-
-        // ==========================================
-        // 1. CHECK TOKEN
-        // ==========================================
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        if (
+            !authHeader ||
+            !authHeader.startsWith("Bearer ")
+        ) {
             return res.status(401).json({
                 status: false,
                 subscribed: false,
                 code: "NO_TOKEN",
-                message: "Authentication token is required"
+                message:
+                    "Authentication token is required"
             });
         }
-
         const token = authHeader.split(" ")[1];
-
         let decoded;
-
         try {
             decoded = jwt.verify(
                 token,
                 process.env.JWT_SECRET
             );
         } catch (err) {
-
-            console.log("JWT validation error:", err.name);
-
-            if (err.name === "TokenExpiredError") {
+            console.log(
+                "JWT validation error:",
+                err.name
+            );
+            if (
+                err.name ===
+                "TokenExpiredError"
+            ) {
                 return res.status(401).json({
                     status: false,
                     subscribed: false,
                     code: "TOKEN_EXPIRED",
-                    message: "Token has expired"
+                    message:
+                        "Token has expired"
                 });
             }
-
             return res.status(401).json({
                 status: false,
                 subscribed: false,
                 code: "INVALID_TOKEN",
-                message: "Invalid token"
+                message:
+                    "Invalid token"
             });
         }
 
-        // ==========================================
-        // 2. GET MSISDN
-        // Prefer MSISDN from JWT
-        // ==========================================
-        let msisdn = decoded.msisdn;
+        let msisdn =
+            decoded.msisdn;
 
-        // fallback to query parameter
         if (!msisdn) {
-            msisdn = req.query.msisdn;
+            msisdn =
+                req.query.msisdn;
         }
+
 
         if (!msisdn) {
             return res.status(400).json({
                 status: false,
                 subscribed: false,
                 code: "NO_MSISDN",
-                message: "MSISDN is required"
+                message:
+                    "MSISDN is required"
             });
         }
 
-        // ==========================================
-        // 3. NORMALIZE MSISDN
-        // ==========================================
-        msisdn = String(msisdn).trim();
 
-        if (msisdn.startsWith("0")) {
-            msisdn = "233" + msisdn.substring(1);
+        function normalizeMsisdn(value) {
+            if (
+                value === null ||
+                value === undefined
+            ) {
+                return null;
+            }
+
+
+            let number =
+                String(value).trim();
+
+            number =
+                number.replace(
+                    /[\s\-().]/g,
+                    ""
+                );
+
+            number =
+                number.replace(
+                    /^\+/,
+                    ""
+                );
+
+            if (
+                /^233\d{9}$/.test(number)
+            ) {
+
+                return number;
+            }
+
+            if (
+                /^0\d{9}$/.test(number)
+            ) {
+
+                return (
+                    "233" +
+                    number.substring(1)
+                );
+            }
+
+            if (
+                /^\d{9}$/.test(number)
+            ) {
+
+                return (
+                    "233" +
+                    number
+                );
+            }
+
+            return null;
         }
 
-        if (!/^233\d{9}$/.test(msisdn)) {
+
+        const normalizedMsisdn =
+            normalizeMsisdn(msisdn);
+
+
+        if (!normalizedMsisdn) {
+
             return res.status(400).json({
+
                 status: false,
+
                 subscribed: false,
+
                 code: "INVALID_MSISDN",
-                message: "Invalid MSISDN format"
+
+                message:
+                    "Invalid MSISDN format"
             });
         }
 
-        // ==========================================
-        // 4. GET ONLY LATEST ENTRY
-        // ==========================================
-        const latestEntry =
-            await mtnSubscriptionCallback.findOne({
-                where: {
-                    msisdn: msisdn
-                },
+
+        console.log(
+            "Original MSISDN:",
+            msisdn
+        );
+
+        console.log(
+            "Normalized MSISDN:",
+            normalizedMsisdn
+        );
+
+        const subscriptionEntries =
+            await mtnSubscriptionCallback.findAll({
+
                 order: [
                     ["createdAt", "DESC"]
                 ]
+
             });
+
+
+        console.log(
+            "Total subscription records:",
+            subscriptionEntries.length
+        );
+
+
+        const matchingEntries =
+            subscriptionEntries.filter(
+                entry => {
+
+                    const dbMsisdn =
+                        normalizeMsisdn(
+                            entry.msisdn
+                        );
+
+
+                    return (
+                        dbMsisdn ===
+                        normalizedMsisdn
+                    );
+                }
+            );
+
+
+        console.log(
+            "Matching subscription records:",
+            matchingEntries.length
+        );
+
+
+        if (
+            matchingEntries.length === 0
+        ) {
+
+            console.log(
+                "No subscription record found:",
+                normalizedMsisdn
+            );
+
+
+            return res.status(200).json({
+
+                status: true,
+
+                subscribed: false,
+
+                code: "NO_SUBSCRIPTION",
+
+                message:
+                    "User is not subscribed",
+
+                msisdn:
+                    normalizedMsisdn
+            });
+        }
+
+        const latestEntry =
+            matchingEntries[0];
+
 
         console.log(
             "Latest subscription entry:",
             latestEntry
         );
 
-        // ==========================================
-        // 5. NO RECORD = NOT SUBSCRIBED
-        // ==========================================
-        if (!latestEntry) {
+        const subscriptionStatus =
+            String(
+                latestEntry.subscription_status ||
+                ""
+            )
+                .trim()
+                .toUpperCase();
 
-            console.log(
-                "No subscription record found:",
-                msisdn
-            );
-
-            return res.status(200).json({
-                status: true,
-                subscribed: false,
-                code: "NO_SUBSCRIPTION",
-                message: "User is not subscribed"
-            });
-        }
-
-        // ==========================================
-        // 6. GET LATEST STATUS
-        // ==========================================
-        const subscriptionStatus = String(
-            latestEntry.subscription_status || ""
-        )
-            .trim()
-            .toUpperCase();
 
         console.log(
-            "MSISDN:",
-            msisdn
+            "Original DB MSISDN:",
+            latestEntry.msisdn
+        );
+
+        console.log(
+            "Normalized DB MSISDN:",
+            normalizeMsisdn(
+                latestEntry.msisdn
+            )
+        );
+
+        console.log(
+            "Requested MSISDN:",
+            normalizedMsisdn
         );
 
         console.log(
@@ -445,43 +565,64 @@ router.get("/check-subscription", async (req, res) => {
             latestEntry.createdAt
         );
 
-        // ==========================================
-        // 7. LATEST ENTRY = D
-        // USER IS UNSUBSCRIBED
-        // ==========================================
-        if (subscriptionStatus === "D") {
+
+        if (
+            subscriptionStatus === "D"
+        ) {
 
             console.log(
                 "USER DEACTIVATED:",
-                msisdn
+                normalizedMsisdn
             );
 
+
             return res.status(200).json({
+
                 status: true,
+
                 subscribed: false,
-                code: "SUBSCRIPTION_DEACTIVATED",
-                message: "User is unsubscribed",
-                subscription_status: "D",
-                msisdn: msisdn
+
+                code:
+                    "SUBSCRIPTION_DEACTIVATED",
+
+                message:
+                    "User is unsubscribed",
+
+                subscription_status:
+                    "D",
+
+                msisdn:
+                    normalizedMsisdn
             });
         }
 
-        // ==========================================
-        // 8. ACTIVE SUBSCRIPTION
-        // ==========================================
+
+
         console.log(
             "USER ACTIVE:",
-            msisdn
+            normalizedMsisdn
         );
 
+
         return res.status(200).json({
+
             status: true,
+
             subscribed: true,
-            code: "ACTIVE_SUBSCRIPTION",
-            message: "User has an active subscription",
-            subscription_status: subscriptionStatus,
-            msisdn: msisdn
+
+            code:
+                "ACTIVE_SUBSCRIPTION",
+
+            message:
+                "User has an active subscription",
+
+            subscription_status:
+                subscriptionStatus,
+
+            msisdn:
+                normalizedMsisdn
         });
+
 
     } catch (error) {
 
@@ -490,14 +631,24 @@ router.get("/check-subscription", async (req, res) => {
             error
         );
 
+
         return res.status(500).json({
+
             status: false,
+
             subscribed: false,
-            code: "SERVER_ERROR",
-            message: "Unable to check subscription status",
-            error: error.message
+
+            code:
+                "SERVER_ERROR",
+
+            message:
+                "Unable to check subscription status",
+
+            error:
+                error.message
         });
     }
+
 });
 
 module.exports = router;
