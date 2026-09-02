@@ -25,12 +25,17 @@ exports.gameCentricCallback = async (req, res) => {
         console.log("Original phone:", phone);
         console.log("Cleaned MSISDN:", msisdn);
 
+        // Fetch ONLY the latest subscription entry
         const user = await MtnSubscriptionCallback.findOne({
             where: {
                 msisdn: msisdn
-            }
+            },
+            order: [
+                ["createdAt", "DESC"]
+            ]
         });
 
+        // No record found
         if (!user) {
             return res.status(404).json({
                 status: "not_found",
@@ -39,10 +44,24 @@ exports.gameCentricCallback = async (req, res) => {
             });
         }
 
+        console.log("Latest subscription record:", user.toJSON());
+
+        // Allow ONLY if latest subscription status is A
+        if (user.subscription_status !== "A") {
+            return res.status(403).json({
+                status: "inactive",
+                message: "User subscription is not active",
+                phone: user.msisdn,
+                subscription_status: user.subscription_status
+            });
+        }
+
+        // Latest record is ACTIVE
         return res.status(200).json({
             status: "active",
-            message: "User found",
-            phone: user.msisdn
+            message: "User subscription is active",
+            phone: user.msisdn,
+            subscription_status: user.subscription_status
         });
 
     } catch (err) {
@@ -53,6 +72,4 @@ exports.gameCentricCallback = async (req, res) => {
             message: "Something went wrong"
         });
     }
-
-    
 };
