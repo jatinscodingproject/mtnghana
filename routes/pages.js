@@ -17,7 +17,7 @@ router.post("/user-login", async (req, res) => {
     const transactionID = Date.now();
 
     const consentUrl =
-        `http://98.71.49.187/Redirect` +
+        `https://cg.mtn.com.gh/Portal` +
         `?OfferCode=${offerCode}` +
         `&mobileNumber=${msisdn}` +
         `&redirectUrl=${redirectUrl}` +

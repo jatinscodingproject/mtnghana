@@ -589,8 +589,15 @@
         let consentUrl = "";
 
         if (window.isHE && window.msisdn) {
+            // consentUrl =
+            //     `http://98.71.49.187/Redirect` +
+            //     `?OfferCode=${offerCode}` +
+            //     `&mobileNumber=${window.msisdn}` +
+            //     `&redirectUrl=${redirectUrl}` +
+            //     `&transactionID=${transactionID}`;
+
             consentUrl =
-                `http://98.71.49.187/Redirect` +
+                `http://102.133.198.92/Redirect` +
                 `?OfferCode=${offerCode}` +
                 `&mobileNumber=${window.msisdn}` +
                 `&redirectUrl=${redirectUrl}` +
