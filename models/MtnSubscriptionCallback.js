@@ -1,124 +1,81 @@
-const crypto = require("crypto");
-const PublisherClick = require("../models/models.publisherClick");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/db");
 
-exports.subscribe = async (req, res) => {
-    try {
+const MtnSubscriptionCallback = sequelize.define(
+    "MtnSubscriptionCallback",
+    {
+        id: {
+            type: DataTypes.BIGINT,
+            autoIncrement: true,
+            primaryKey: true
+        },
 
-        const {
-            client,
-            service,
-            publisher,
-            clickId
-        } = req.query;
+        transaction_id: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
 
+        cgid: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
 
-        if (!client) {
-            return res.status(400).json({
-                success: false,
-                message: "client is required"
-            });
+        msisdn: {
+            type: DataTypes.STRING(20),
+            allowNull: true
+        },
+
+        offer_id: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+
+        command: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+
+        subscriber_life_cycle: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+
+        subscription_status: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+
+        status_code: {
+            type: DataTypes.STRING(20),
+            allowNull: true
+        },
+
+        redirect_status: {
+            type: DataTypes.STRING(20),
+            allowNull: true
+        },
+
+        callback_payload: {
+            type: DataTypes.JSON,
+            allowNull: true
+        },
+
+        redirect_payload: {
+            type: DataTypes.JSON,
+            allowNull: true
+        },
+
+        is_callback_received: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
         }
-
-        if (!service) {
-            return res.status(400).json({
-                success: false,
-                message: "service is required"
-            });
-        }
-
-        if (!publisher) {
-            return res.status(400).json({
-                success: false,
-                message: "publisher is required"
-            });
-        }
-
-        if (!clickId) {
-            return res.status(400).json({
-                success: false,
-                message: "clickId is required"
-            });
-        }
-
-
-        // -----------------------------
-        // Clean values
-        // -----------------------------
-
-        const cleanClient = String(client).trim();
-        const cleanService = String(service).trim();
-        const cleanPublisher = String(publisher).trim();
-        const cleanClickId = String(clickId).trim();
-
-
-        // -----------------------------
-        // Generate random transaction ID
-        // -----------------------------
-
-        const trxId = crypto
-            .randomUUID()
-            .replace(/-/g, "")
-            .substring(0, 12)
-            .toUpperCase();
-
-
-        // Example:
-        // 8F31A7C92B10
-
-
-        // -----------------------------
-        // Store publisher click
-        // -----------------------------
-
-        const click = await PublisherClick.create({
-            client: cleanClient,
-            service: cleanService,
-            publisher: cleanPublisher,
-            click_id: cleanClickId
-        });
-
-
-        console.log("Publisher Click Stored:", {
-            id: click.id,
-            client: cleanClient,
-            service: cleanService,
-            publisher: cleanPublisher,
-            clickId: cleanClickId,
-            trxId: trxId
-        });
-
-
-        // -----------------------------
-        // Create advertiser URL
-        // -----------------------------
-
-        const redirectUrl =
-            "http://ng-airtel-web.upp.st/NAC-NGAIR-INNOV/FitnessDaily-24-Yes-40677-Web" +
-            `?trxId=${encodeURIComponent(trxId)}` +
-            `&trfsrc=web`;
-
-
-        console.log("Redirecting to:", redirectUrl);
-
-
-        // -----------------------------
-        // Redirect
-        // -----------------------------
-
-        return res.redirect(302, redirectUrl);
-
-
-    } catch (error) {
-
-        console.error(
-            "Advertiser Subscribe Error:",
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            message: "Unable to process advertiser subscription",
-            error: error.message
-        });
+    },
+    {
+        tableName: "mtn_subscription_callbacks",
+        timestamps: true,
+        underscored: true
     }
-};
+);
+
+module.exports = MtnSubscriptionCallback;
