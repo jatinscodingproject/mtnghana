@@ -78,4 +78,4 @@ const MtnSubscriptionCallback = sequelize.define(
     }
 );
 
-module.exports = MtnSubscriptionCallback;
+module.exports = MtnSubscriptionCallback;3
