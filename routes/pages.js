@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 const PagesController = require("../controllers/PagesController");
 const gameCentricCallback = require("../controllers/esportsController");
+const advertiserController = require("../controllers/controller.advertiserController");
 const axios = require("axios");
 
 router.get("/", PagesController.homePage);
 router.get("/login", PagesController.loginPage);
 router.get("/terms", PagesController.termsPage);
 router.post("/esports", gameCentricCallback.gameCentricCallback);
+router.get("/advertisingLanding/subscribe", advertiserController.subscribe);
 
 router.post("/user-login", async (req, res) => {
     const { msisdn } = req.body;
@@ -31,6 +33,8 @@ router.post("/user-login", async (req, res) => {
 
 const jwt = require("jsonwebtoken");
 const mtnSubscriptionCallback = require("../models/MtnSubscriptionCallback");
+const PublisherClick = require("../models/publisherClick");
+
 
 router.get("/redirect", async (req, res) => {
     try {
@@ -39,92 +43,212 @@ router.get("/redirect", async (req, res) => {
             transactionID,
             Offerid,
             msisdn,
-            status
+            status,
+            ClientTransactionId,
+            clientTransactionId,
+            client_transaction_id,
+            ChargeAmount,
+            chargeAmount
         } = req.query;
 
-        console.log('query' , req.query);
 
+        console.log("==========================================");
+        console.log("CGW REDIRECT API HIT");
+        console.log("Headers:", req.headers);
+        console.log("Query:", req.query);
+        console.log("==========================================");
+
+        const clientTxnId =
+            ClientTransactionId ||
+            clientTransactionId ||
+            client_transaction_id ||
+            null;
+
+
+        const charge =
+            ChargeAmount ||
+            chargeAmount ||
+            null;
+
+
+        console.log("CGW Transaction ID:", transactionID);
+        console.log("Client Transaction ID:", clientTxnId);
+        console.log("Charge Amount:", charge);
         let allowLogin = false;
         let message = "";
 
         switch (String(status)) {
             case "200":
-                console.log("I AM here")
+
+                console.log("I AM HERE - SUBSCRIPTION SUCCESS");
+
                 allowLogin = true;
                 message = "Subscription successful.";
+
                 break;
+
             case "9":
-            case "115":3
+
+            case "115":
+
                 allowLogin = true;
                 message = "You are already subscribed.";
+
                 break;
+
+
             case "112":
-                message = "Your subscription is being processed. Please wait a few moments.";
+
+                message =
+                    "Your subscription is being processed. Please wait a few moments.";
+
                 break;
+
+
             case "11":
-                message = "Subscription cancelled because consent was not provided.";
+
+                message =
+                    "Subscription cancelled because consent was not provided.";
+
                 break;
+
+
+            // --------------------------------------------------------
+            // INVALID CONSENT
+            // --------------------------------------------------------
             case "12":
+
                 message = "Invalid consent received.";
+
                 break;
+
+
+            // --------------------------------------------------------
+            // CONSENT PROCESSING FAILED
+            // --------------------------------------------------------
             case "13":
+
                 message = "Consent processing failed.";
+
                 break;
-           case "2":
+
+
+            // --------------------------------------------------------
+            // INSUFFICIENT BALANCE
+            // --------------------------------------------------------
+            case "2":
+
             case "26":
+
             case "29":
+
             case "55":
+
             case "63":
+
             case "111": {
-                console.log("Insufficient funds status:", status);
+
+                console.log(
+                    "Insufficient funds status:",
+                    status
+                );
+
 
                 if (!msisdn) {
-                    message = "Insufficient balance. Please recharge and try again.";
+
+                    message =
+                        "Insufficient balance. Please recharge and try again.";
+
                     break;
                 }
 
-                const latestCallback = await mtnSubscriptionCallback.findOne({
-                    where: {
-                        msisdn: String(msisdn),
-                        is_callback_received: true
-                    },
-                    order: [["createdAt", "DESC"]]
-                });
 
-                console.log("Latest callback for insufficient funds:", latestCallback);
+                const latestCallback =
+                    await mtnSubscriptionCallback.findOne({
+                        where: {
+                            msisdn: String(msisdn),
+                            is_callback_received: true
+                        },
+
+                        order: [
+                            ["createdAt", "DESC"]
+                        ]
+                    });
+
+
+                console.log(
+                    "Latest callback for insufficient funds:",
+                    latestCallback
+                );
+
 
                 if (latestCallback) {
-                    const callbackTime = new Date(latestCallback.createdAt);
+
+                    const callbackTime =
+                        new Date(latestCallback.createdAt);
+
                     const now = new Date();
 
+
                     const sameDay =
-                        callbackTime.getFullYear() === now.getFullYear() &&
-                        callbackTime.getMonth() === now.getMonth() &&
-                        callbackTime.getDate() === now.getDate();
+                        callbackTime.getFullYear() ===
+                            now.getFullYear() &&
+
+                        callbackTime.getMonth() ===
+                            now.getMonth() &&
+
+                        callbackTime.getDate() ===
+                            now.getDate();
+
 
                     const differenceMinutes =
-                        Math.abs(now.getTime() - callbackTime.getTime()) /
+                        Math.abs(
+                            now.getTime() -
+                            callbackTime.getTime()
+                        ) /
                         (1000 * 60);
 
-                    console.log("Callback time:", callbackTime);
-                    console.log("Difference:", differenceMinutes, "minutes");
-                    console.log("Same day:", sameDay);
+
+                    console.log(
+                        "Callback time:",
+                        callbackTime
+                    );
+
+                    console.log(
+                        "Difference:",
+                        differenceMinutes,
+                        "minutes"
+                    );
+
+                    console.log(
+                        "Same day:",
+                        sameDay
+                    );
+
 
                     // Callback received today and within 10 minutes
-                    if (sameDay && differenceMinutes <= 10) {
+                    if (
+                        sameDay &&
+                        differenceMinutes <= 10
+                    ) {
+
                         allowLogin = true;
 
                         console.log(
                             "Recent callback found. Allowing login."
                         );
+
                     } else {
+
                         allowLogin = false;
 
                         console.log(
                             "Callback is missing or older than 10 minutes."
                         );
                     }
+
                 } else {
+
                     allowLogin = false;
 
                     console.log(
@@ -133,21 +257,217 @@ router.get("/redirect", async (req, res) => {
                     );
                 }
 
-                message = "Insufficient balance. Please recharge and try again.";
+
+                message =
+                    "Insufficient balance. Please recharge and try again.";
 
                 break;
             }
+
+
+            // --------------------------------------------------------
+            // REQUEST ALREADY EXISTS
+            // --------------------------------------------------------
             case "644":
-                message = "A subscription request already exists. Please try again later.";
-                break;
-            case "1":
-            case "91":
-            case "186":
-                message = "Subscription failed. Please try again.";
+
+                message =
+                    "A subscription request already exists. Please try again later.";
+
                 break;
 
+
+            // --------------------------------------------------------
+            // FAILED
+            // --------------------------------------------------------
+            case "1":
+
+            case "91":
+
+            case "186":
+
+                message =
+                    "Subscription failed. Please try again.";
+
+                break;
+
+
+            // --------------------------------------------------------
+            // DEFAULT
+            // --------------------------------------------------------
             default:
-                message = "Unable to process your subscription.";
+
+                message =
+                    "Unable to process your subscription.";
+
+                break;
+        }
+
+
+        // ============================================================
+        // DIGITALSUNRISE PUBLISHER POSTBACK
+        // ============================================================
+        //
+        // Only process when:
+        //
+        // 1. ClientTransactionId exists
+        // 2. ChargeAmount exists and is greater than 0
+        // 3. publisher = digitalsunrise
+        //
+        // publisher_clicks:
+        //
+        // transaction_id = ClientTransactionId
+        // publisher      = digitalsunrise
+        // click_id       = value sent to publisher
+        //
+        // ============================================================
+
+        try {
+
+            const chargeAmountNumber =
+                parseFloat(charge);
+
+
+            if (
+                clientTxnId &&
+                !isNaN(chargeAmountNumber) &&
+                chargeAmountNumber > 0
+            ) {
+
+                console.log(
+                    "Checking DigitalSunrise publisher click..."
+                );
+
+
+                const publisherClick =
+                    await PublisherClick.findOne({
+                        where: {
+                            transaction_id: String(clientTxnId),
+                            publisher: "digitalsunrise"
+                        },
+
+                        order: [
+                            ["created_at", "DESC"]
+                        ]
+                    });
+
+
+                console.log(
+                    "DigitalSunrise Publisher Click:",
+                    publisherClick
+                );
+
+
+                if (publisherClick) {
+
+                    const clickId =
+                        publisherClick.click_id;
+
+
+                    if (clickId) {
+
+                        const publisherPostback =
+                            `https://digitalsunrise10071896.o18.link/p` +
+                            `?m=16519` +
+                            `&tid=${encodeURIComponent(clickId)}`;
+
+
+                        console.log(
+                            "=========================================="
+                        );
+
+                        console.log(
+                            "DIGITALSUNRISE POSTBACK"
+                        );
+
+                        console.log(
+                            "Publisher:",
+                            publisherClick.publisher
+                        );
+
+                        console.log(
+                            "Client Transaction ID:",
+                            clientTxnId
+                        );
+
+                        console.log(
+                            "Click ID:",
+                            clickId
+                        );
+
+                        console.log(
+                            "Charge Amount:",
+                            chargeAmountNumber
+                        );
+
+                        console.log(
+                            "Postback URL:",
+                            publisherPostback
+                        );
+
+                        console.log(
+                            "=========================================="
+                        );
+
+
+                        const publisherResponse =
+                            await axios.get(
+                                publisherPostback,
+                                {
+                                    timeout: 10000
+                                }
+                            );
+
+
+                        console.log(
+                            "DigitalSunrise Postback Response Status:",
+                            publisherResponse.status
+                        );
+
+                        console.log(
+                            "DigitalSunrise Postback Response:",
+                            publisherResponse.data
+                        );
+
+                    } else {
+
+                        console.log(
+                            "DigitalSunrise click ID is empty."
+                        );
+                    }
+
+                } else {
+
+                    console.log(
+                        "No DigitalSunrise publisher click found for ClientTransactionId:",
+                        clientTxnId
+                    );
+                }
+
+            } else {
+
+                console.log(
+                    "DigitalSunrise postback skipped."
+                );
+
+                console.log(
+                    "ClientTransactionId:",
+                    clientTxnId
+                );
+
+                console.log(
+                    "ChargeAmount:",
+                    charge
+                );
+            }
+
+
+        } catch (publisherError) {
+
+            console.error(
+                "DigitalSunrise Publisher Postback Error:",
+                publisherError.message
+            );
+
         }
 
         if (allowLogin) {
@@ -158,27 +478,201 @@ router.get("/redirect", async (req, res) => {
                     transactionID,
                     CGID
                 },
+
                 process.env.JWT_SECRET,
+
                 {
                     expiresIn: "15m"
                 }
             );
-            console.log('token' , token)
+
+
+            console.log(
+                "Generated JWT Token:",
+                token
+            );
+
+
             return res.redirect(
-                `https://mobile.arenaxpro.com?token=${encodeURIComponent(token)}&msisdn=${encodeURIComponent(msisdn)}`
+                `https://mobile.arenaxpro.com` +
+                `?token=${encodeURIComponent(token)}` +
+                `&msisdn=${encodeURIComponent(msisdn || "")}`
             );
         }
+
         return res.redirect(
-            `https://mobile.arenaxpro.com?error=${encodeURIComponent(message)}`
+            `https://mobile.arenaxpro.com` +
+            `?error=${encodeURIComponent(message)}`
         );
 
+
     } catch (error) {
-        console.error("Redirect Error:", error);
+
+        console.error(
+            "Redirect Error:",
+            error
+        );
+
+
         return res.redirect(
-            `https://mobile.arenaxpro.com?error=${encodeURIComponent("Something went wrong. Please try again.")}`
+            `https://mobile.arenaxpro.com` +
+            `?error=${encodeURIComponent(
+                "Something went wrong. Please try again."
+            )}`
         );
     }
 });
+
+
+// router.get("/redirect", async (req, res) => {
+//     try {
+//         const {
+//             CGID,
+//             transactionID,
+//             Offerid,
+//             msisdn,
+//             status
+//         } = req.query;
+
+//         console.log(req.header);
+
+//         console.log('query' , req.query);
+
+//         let allowLogin = false;
+//         let message = "";
+
+//         switch (String(status)) {
+//             case "200":
+//                 console.log("I AM here")
+//                 allowLogin = true;
+//                 message = "Subscription successful.";
+//                 break;
+//             case "9":
+//             case "115":3
+//                 allowLogin = true;
+//                 message = "You are already subscribed.";
+//                 break;
+//             case "112":
+//                 message = "Your subscription is being processed. Please wait a few moments.";
+//                 break;
+//             case "11":
+//                 message = "Subscription cancelled because consent was not provided.";
+//                 break;
+//             case "12":
+//                 message = "Invalid consent received.";
+//                 break;
+//             case "13":
+//                 message = "Consent processing failed.";
+//                 break;
+//            case "2":
+//             case "26":
+//             case "29":
+//             case "55":
+//             case "63":
+//             case "111": {
+//                 console.log("Insufficient funds status:", status);
+
+//                 if (!msisdn) {
+//                     message = "Insufficient balance. Please recharge and try again.";
+//                     break;
+//                 }
+
+//                 const latestCallback = await mtnSubscriptionCallback.findOne({
+//                     where: {
+//                         msisdn: String(msisdn),
+//                         is_callback_received: true
+//                     },
+//                     order: [["createdAt", "DESC"]]
+//                 });
+
+//                 console.log("Latest callback for insufficient funds:", latestCallback);
+
+//                 if (latestCallback) {
+//                     const callbackTime = new Date(latestCallback.createdAt);
+//                     const now = new Date();
+
+//                     const sameDay =
+//                         callbackTime.getFullYear() === now.getFullYear() &&
+//                         callbackTime.getMonth() === now.getMonth() &&
+//                         callbackTime.getDate() === now.getDate();
+
+//                     const differenceMinutes =
+//                         Math.abs(now.getTime() - callbackTime.getTime()) /
+//                         (1000 * 60);
+
+//                     console.log("Callback time:", callbackTime);
+//                     console.log("Difference:", differenceMinutes, "minutes");
+//                     console.log("Same day:", sameDay);
+
+//                     // Callback received today and within 10 minutes
+//                     if (sameDay && differenceMinutes <= 10) {
+//                         allowLogin = true;
+
+//                         console.log(
+//                             "Recent callback found. Allowing login."
+//                         );
+//                     } else {
+//                         allowLogin = false;
+
+//                         console.log(
+//                             "Callback is missing or older than 10 minutes."
+//                         );
+//                     }
+//                 } else {
+//                     allowLogin = false;
+
+//                     console.log(
+//                         "No callback found for MSISDN:",
+//                         msisdn
+//                     );
+//                 }
+
+//                 message = "Insufficient balance. Please recharge and try again.";
+
+//                 break;
+//             }
+//             case "644":
+//                 message = "A subscription request already exists. Please try again later.";
+//                 break;
+//             case "1":
+//             case "91":
+//             case "186":
+//                 message = "Subscription failed. Please try again.";
+//                 break;
+
+//             default:
+//                 message = "Unable to process your subscription.";
+//         }
+
+//         if (allowLogin) {
+
+//             const token = jwt.sign(
+//                 {
+//                     msisdn,
+//                     transactionID,
+//                     CGID
+//                 },
+//                 process.env.JWT_SECRET,
+//                 {
+//                     expiresIn: "15m"
+//                 }
+//             );
+//             console.log('token' , token)
+//             return res.redirect(
+//                 `https://mobile.arenaxpro.com?token=${encodeURIComponent(token)}&msisdn=${encodeURIComponent(msisdn)}`
+//             );
+//         }
+//         return res.redirect(
+//             `https://mobile.arenaxpro.com?error=${encodeURIComponent(message)}`
+//         );
+
+//     } catch (error) {
+//         console.error("Redirect Error:", error);
+//         return res.redirect(
+//             `https://mobile.arenaxpro.com?error=${encodeURIComponent("Something went wrong. Please try again.")}`
+//         );
+//     }
+// });
 
 router.post("/notify-callback", async (req, res) => {
     try {

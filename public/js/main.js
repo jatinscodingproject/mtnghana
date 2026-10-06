@@ -164,10 +164,6 @@
    async function playGame(game) {
     const token = localStorage.getItem("auth_token");
     const msisdn = localStorage.getItem("msisdn");
-
-    // =====================================================
-    // 1. NO TOKEN
-    // =====================================================
     if (!token) {
         console.log("No auth token found.");
 
@@ -175,9 +171,6 @@
         return;
     }
 
-    // =====================================================
-    // 2. NO MSISDN
-    // =====================================================
     if (!msisdn) {
         console.log("No MSISDN found. Destroying token.");
 
@@ -192,10 +185,6 @@
     }
 
     try {
-
-        // =====================================================
-        // 3. CHECK LATEST SUBSCRIPTION FROM SERVER
-        // =====================================================
         const response = await fetch(
             `/check-subscription?msisdn=${encodeURIComponent(msisdn)}`,
             {
@@ -568,44 +557,64 @@
     }
 
     async function subscribeNow() {
-        const btn = document.getElementById("subscribeBtn");
+    const btn = document.getElementById("subscribeBtn");
 
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = "Redirecting...";
-        }
-
-        window.addEventListener("pageshow", () => {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerText = "Subscribe Now";
-            }
-        }, { once: true });
-
-        const offerCode = "9916710032";
-        const redirectUrl = encodeURIComponent("http://mobile.arenaxpro.com/redirect");
-        const transactionID = Date.now();
-
-        let consentUrl = "";
-
-        if (window.isHE && window.msisdn) {
-            // consentUrl =
-            //     `http://98.71.49.187/Redirect` +
-            //     `?OfferCode=${offerCode}` +
-            //     `&mobileNumber=${window.msisdn}` +
-            //     `&redirectUrl=${redirectUrl}` +
-            //     `&transactionID=${transactionID}`;
-
-            consentUrl =
-                `http://102.133.198.92/Redirect` +
-                `?OfferCode=${offerCode}` +
-                `&mobileNumber=${window.msisdn}` +
-                `&redirectUrl=${redirectUrl}` +
-                `&transactionID=${transactionID}`;
-
-            window.location.href = consentUrl;
-        } else {
-            window.location.href = "/login";
-            return;
-        }
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Redirecting...";
     }
+
+    window.addEventListener("pageshow", () => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "Subscribe Now";
+        }
+    }, { once: true });
+
+    const offerCode = "9916710032";
+
+    const redirectUrl = encodeURIComponent(
+        "http://mobile.arenaxpro.com"
+    );
+
+    // ---------------------------------------------
+    // Use transaction ID from backend if available
+    // Otherwise generate a new one
+    // ---------------------------------------------
+
+    let transactionID = window.transactionId;
+
+    if (!transactionID) {
+        transactionID = Date.now().toString();
+
+        console.log(
+            "No transaction ID found. Generated:",
+            transactionID
+        );
+    } else {
+        console.log(
+            "Using existing transaction ID:",
+            transactionID
+        );
+    }
+
+    let consentUrl = "";
+
+    if (window.isHE && window.msisdn) {
+
+        consentUrl =
+            `http://102.133.198.92/Redirect` +
+            `?OfferCode=${encodeURIComponent(offerCode)}` +
+            `&mobileNumber=${encodeURIComponent(window.msisdn)}` +
+            `&redirectUrl=${redirectUrl}` +
+            `&transactionID=${encodeURIComponent(transactionID)}`;
+
+        console.log("Consent URL:", consentUrl);
+
+        window.location.href = consentUrl;
+
+    } else {
+        window.location.href = "/login";
+        return;
+    }
+}  

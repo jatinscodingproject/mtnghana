@@ -378,27 +378,15 @@
 
             window.msisdn = "<%= msisdn || '' %>";
             window.isHE = <%= isHE %>;
+            window.transactionId = "<%= transactionId || '' %>";
 
 
-            /* ============================================================
-               DOM READY
-               ============================================================ */
 
             document.addEventListener(
                 "DOMContentLoaded",
                 async function () {
 
-                    console.log(
-                        "================================="
-                    );
 
-                    console.log(
-                        "ArenaXpro subscription initialization"
-                    );
-
-                    console.log(
-                        "================================="
-                    );
 
                     const urlParams =
                         new URLSearchParams(
