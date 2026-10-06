@@ -51,13 +51,6 @@ router.get("/redirect", async (req, res) => {
             chargeAmount
         } = req.query;
 
-
-        console.log("==========================================");
-        console.log("CGW REDIRECT API HIT");
-        console.log("Headers:", req.headers);
-        console.log("Query:", req.query);
-        console.log("==========================================");
-
         const clientTxnId =
             ClientTransactionId ||
             clientTransactionId ||
@@ -71,31 +64,37 @@ router.get("/redirect", async (req, res) => {
             null;
 
 
-        console.log("CGW Transaction ID:", transactionID);
-        console.log("Client Transaction ID:", clientTxnId);
-        console.log("Charge Amount:", charge);
         let allowLogin = false;
         let message = "";
 
         switch (String(status)) {
             case "200":
-
-                console.log("I AM HERE - SUBSCRIPTION SUCCESS");
-
+                console.log("I AM HERE");
                 allowLogin = true;
+
                 message = "Subscription successful.";
 
                 break;
+
+
+            // --------------------------------------------------------
+            // ALREADY SUBSCRIBED
+            // --------------------------------------------------------
 
             case "9":
 
             case "115":
 
                 allowLogin = true;
+
                 message = "You are already subscribed.";
 
                 break;
 
+
+            // --------------------------------------------------------
+            // SUBSCRIPTION PROCESSING
+            // --------------------------------------------------------
 
             case "112":
 
@@ -104,6 +103,10 @@ router.get("/redirect", async (req, res) => {
 
                 break;
 
+
+            // --------------------------------------------------------
+            // CONSENT NOT PROVIDED
+            // --------------------------------------------------------
 
             case "11":
 
@@ -116,9 +119,11 @@ router.get("/redirect", async (req, res) => {
             // --------------------------------------------------------
             // INVALID CONSENT
             // --------------------------------------------------------
+
             case "12":
 
-                message = "Invalid consent received.";
+                message =
+                    "Invalid consent received.";
 
                 break;
 
@@ -126,16 +131,19 @@ router.get("/redirect", async (req, res) => {
             // --------------------------------------------------------
             // CONSENT PROCESSING FAILED
             // --------------------------------------------------------
+
             case "13":
 
-                message = "Consent processing failed.";
+                message =
+                    "Consent processing failed.";
 
                 break;
 
 
             // --------------------------------------------------------
-            // INSUFFICIENT BALANCE
+            // INSUFFICIENT FUNDS
             // --------------------------------------------------------
+
             case "2":
 
             case "26":
@@ -165,6 +173,7 @@ router.get("/redirect", async (req, res) => {
 
                 const latestCallback =
                     await mtnSubscriptionCallback.findOne({
+
                         where: {
                             msisdn: String(msisdn),
                             is_callback_received: true
@@ -227,6 +236,7 @@ router.get("/redirect", async (req, res) => {
 
 
                     // Callback received today and within 10 minutes
+
                     if (
                         sameDay &&
                         differenceMinutes <= 10
@@ -268,6 +278,7 @@ router.get("/redirect", async (req, res) => {
             // --------------------------------------------------------
             // REQUEST ALREADY EXISTS
             // --------------------------------------------------------
+
             case "644":
 
                 message =
@@ -277,8 +288,9 @@ router.get("/redirect", async (req, res) => {
 
 
             // --------------------------------------------------------
-            // FAILED
+            // SUBSCRIPTION FAILED
             // --------------------------------------------------------
+
             case "1":
 
             case "91":
@@ -294,6 +306,7 @@ router.get("/redirect", async (req, res) => {
             // --------------------------------------------------------
             // DEFAULT
             // --------------------------------------------------------
+
             default:
 
                 message =
@@ -304,20 +317,35 @@ router.get("/redirect", async (req, res) => {
 
 
         // ============================================================
-        // DIGITALSUNRISE PUBLISHER POSTBACK
+        // PUBLISHER POSTBACK
         // ============================================================
         //
-        // Only process when:
+        // Publisher mapping:
         //
-        // 1. ClientTransactionId exists
-        // 2. ChargeAmount exists and is greater than 0
-        // 3. publisher = digitalsunrise
+        // 1. DS / DigitalSunrise
+        // 2. Col Sunrese
+        // 3. ALPS
         //
-        // publisher_clicks:
+        // Transaction matching:
         //
-        // transaction_id = ClientTransactionId
-        // publisher      = digitalsunrise
-        // click_id       = value sent to publisher
+        // ClientTransactionId
+        //          |
+        //          v
+        // publisher_clicks.transaction_id
+        //
+        // After matching the record:
+        //
+        // publisher_clicks.click_id
+        //          |
+        //          v
+        // Publisher postback
+        //
+        // DS and Col Sunrese:
+        //      Only send when ChargeAmount > 0
+        //
+        // ALPS:
+        //      Send when ChargeAmount = 0
+        //      Send when ChargeAmount > 0
         //
         // ============================================================
 
@@ -327,22 +355,17 @@ router.get("/redirect", async (req, res) => {
                 parseFloat(charge);
 
 
-            if (
-                clientTxnId &&
-                !isNaN(chargeAmountNumber) &&
-                chargeAmountNumber > 0
-            ) {
+            if (clientTxnId) {
 
                 console.log(
-                    "Checking DigitalSunrise publisher click..."
+                    "Searching publisher_clicks using ClientTransactionId:",
+                    clientTxnId
                 );
-
-
                 const publisherClick =
                     await PublisherClick.findOne({
+
                         where: {
-                            transaction_id: String(clientTxnId),
-                            publisher: "digitalsunrise"
+                            transaction_id: String(clientTxnId)
                         },
 
                         order: [
@@ -352,20 +375,70 @@ router.get("/redirect", async (req, res) => {
 
 
                 console.log(
-                    "DigitalSunrise Publisher Click:",
+                    "Publisher Click Found:",
                     publisherClick
                 );
 
 
-                if (publisherClick) {
+                if (
+                    publisherClick &&
+                    publisherClick.click_id
+                ) {
 
                     const clickId =
                         publisherClick.click_id;
 
 
-                    if (clickId) {
+                    const publisher =
+                        String(
+                            publisherClick.publisher || ""
+                        )
+                        .trim()
+                        .toLowerCase();
 
-                        const publisherPostback =
+
+                    console.log(
+                        "Publisher:",
+                        publisher
+                    );
+
+                    console.log(
+                        "Click ID:",
+                        clickId
+                    );
+
+                    console.log(
+                        "Charge Amount:",
+                        chargeAmountNumber
+                    );
+
+
+                    // ====================================================
+                    // DS - DIGITAL SUNRISE
+                    // ====================================================
+                    //
+                    // Publisher value:
+                    //
+                    // DS
+                    //
+                    // Postback:
+                    //
+                    // https://digitalsunrise10071896.o18.link/p
+                    // ?m=16519
+                    // &tid=<CLICK_ID>
+                    //
+                    // Only send when charge amount > 0.
+                    // ====================================================
+
+                    if (
+                        (
+                            publisher === "ds"
+                        ) &&
+                        !isNaN(chargeAmountNumber) &&
+                        chargeAmountNumber > 0
+                    ) {
+
+                        const postbackUrl =
                             `https://digitalsunrise10071896.o18.link/p` +
                             `?m=16519` +
                             `&tid=${encodeURIComponent(clickId)}`;
@@ -376,42 +449,18 @@ router.get("/redirect", async (req, res) => {
                         );
 
                         console.log(
-                            "DIGITALSUNRISE POSTBACK"
-                        );
-
-                        console.log(
-                            "Publisher:",
-                            publisherClick.publisher
-                        );
-
-                        console.log(
-                            "Client Transaction ID:",
-                            clientTxnId
-                        );
-
-                        console.log(
-                            "Click ID:",
-                            clickId
-                        );
-
-                        console.log(
-                            "Charge Amount:",
-                            chargeAmountNumber
+                            "DIGITAL SUNRISE POSTBACK"
                         );
 
                         console.log(
                             "Postback URL:",
-                            publisherPostback
-                        );
-
-                        console.log(
-                            "=========================================="
+                            postbackUrl
                         );
 
 
-                        const publisherResponse =
+                        const response =
                             await axios.get(
-                                publisherPostback,
+                                postbackUrl,
                                 {
                                     timeout: 10000
                                 }
@@ -419,44 +468,162 @@ router.get("/redirect", async (req, res) => {
 
 
                         console.log(
-                            "DigitalSunrise Postback Response Status:",
-                            publisherResponse.status
+                            "DigitalSunrise Postback Status:",
+                            response.status
                         );
 
                         console.log(
                             "DigitalSunrise Postback Response:",
-                            publisherResponse.data
+                            response.data
                         );
 
-                    } else {
+                    }
+
+
+                    // ====================================================
+                    // COL SUNRESE
+                    // ====================================================
+                    //
+                    // Postback:
+                    //
+                    // http://162.243.217.139/dlv/track.php
+                    // ?ccuid=<CLICK_ID>
+                    //
+                    // Only send when charge amount > 0.
+                    // ====================================================
+
+                    if (
+                        (
+                            publisher === "col"
+                        ) &&
+                        !isNaN(chargeAmountNumber) &&
+                        chargeAmountNumber > 0
+                    ) {
+
+                        const postbackUrl =
+                            `http://162.243.217.139/dlv/track.php` +
+                            `?ccuid=${encodeURIComponent(clickId)}`;
+
 
                         console.log(
-                            "DigitalSunrise click ID is empty."
+                            "=========================================="
                         );
+
+                        console.log(
+                            "COL SUNRESE POSTBACK"
+                        );
+
+                        console.log(
+                            "Postback URL:",
+                            postbackUrl
+                        );
+
+
+                        const response =
+                            await axios.get(
+                                postbackUrl,
+                                {
+                                    timeout: 10000
+                                }
+                            );
+
+
+                        console.log(
+                            "Col Sunrese Postback Status:",
+                            response.status
+                        );
+
+                        console.log(
+                            "Col Sunrese Postback Response:",
+                            response.data
+                        );
+
                     }
+
+
+                    // ====================================================
+                    // ALPS
+                    // ====================================================
+                    //
+                    // Publisher value:
+                    //
+                    // ALPS
+                    //
+                    // Postback:
+                    //
+                    // https://ads.alpasrame.com/api/adserver/postback
+                    // ?secureid=4nfb1eqb
+                    // &transaction_id=<CLICK_ID>
+                    //
+                    // ALPS receives postback for:
+                    //
+                    // ChargeAmount = 0
+                    //
+                    // AND
+                    //
+                    // ChargeAmount > 0
+                    //
+                    // ====================================================
+
+                    if (
+                        publisher === "alps"
+                    ) {
+
+                        const postbackUrl =
+                            `https://ads.alpasrame.com/api/adserver/postback` +
+                            `?secureid=4nfb1eqb` +
+                            `&transaction_id=${encodeURIComponent(clickId)}`;
+
+
+                        console.log(
+                            "=========================================="
+                        );
+
+                        console.log(
+                            "ALPS POSTBACK"
+                        );
+
+                        console.log(
+                            "Postback URL:",
+                            postbackUrl
+                        );
+
+
+                        const response =
+                            await axios.get(
+                                postbackUrl,
+                                {
+                                    timeout: 10000
+                                }
+                            );
+
+
+                        console.log(
+                            "ALPS Postback Status:",
+                            response.status
+                        );
+
+                        console.log(
+                            "ALPS Postback Response:",
+                            response.data
+                        );
+
+                    }
+
 
                 } else {
 
                     console.log(
-                        "No DigitalSunrise publisher click found for ClientTransactionId:",
+                        "No publisher click found for ClientTransactionId:",
                         clientTxnId
                     );
                 }
 
+
             } else {
 
                 console.log(
-                    "DigitalSunrise postback skipped."
-                );
-
-                console.log(
-                    "ClientTransactionId:",
-                    clientTxnId
-                );
-
-                console.log(
-                    "ChargeAmount:",
-                    charge
+                    "ClientTransactionId is missing. Publisher postback skipped."
                 );
             }
 
@@ -464,45 +631,62 @@ router.get("/redirect", async (req, res) => {
         } catch (publisherError) {
 
             console.error(
-                "DigitalSunrise Publisher Postback Error:",
-                publisherError.message
+                "Publisher Postback Error:",
+                publisherError
             );
 
         }
 
+
+        // ============================================================
+        // CREATE JWT AND REDIRECT USER
+        // ============================================================
+
         if (allowLogin) {
 
-            const token = jwt.sign(
-                {
-                    msisdn,
-                    transactionID,
-                    CGID
-                },
+            const token =
+                jwt.sign(
 
-                process.env.JWT_SECRET,
+                    {
+                        msisdn,
+                        transactionID,
+                        CGID
+                    },
 
-                {
-                    expiresIn: "15m"
-                }
-            );
+                    process.env.JWT_SECRET,
+
+                    {
+                        expiresIn: "15m"
+                    }
+                );
 
 
             console.log(
-                "Generated JWT Token:",
+                "Generated Token:",
                 token
             );
 
 
             return res.redirect(
+
                 `https://mobile.arenaxpro.com` +
                 `?token=${encodeURIComponent(token)}` +
                 `&msisdn=${encodeURIComponent(msisdn || "")}`
+
             );
+
         }
 
+
+        // ============================================================
+        // SUBSCRIPTION FAILED / LOGIN NOT ALLOWED
+        // ============================================================
+
         return res.redirect(
+
             `https://mobile.arenaxpro.com` +
             `?error=${encodeURIComponent(message)}`
+
         );
 
 
@@ -515,13 +699,19 @@ router.get("/redirect", async (req, res) => {
 
 
         return res.redirect(
+
             `https://mobile.arenaxpro.com` +
             `?error=${encodeURIComponent(
                 "Something went wrong. Please try again."
             )}`
+
         );
+
     }
 });
+
+
+module.exports = router;
 
 
 // router.get("/redirect", async (req, res) => {
