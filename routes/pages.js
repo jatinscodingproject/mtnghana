@@ -541,29 +541,6 @@ router.get("/redirect", async (req, res) => {
                     }
 
 
-                    // ====================================================
-                    // ALPS
-                    // ====================================================
-                    //
-                    // Publisher value:
-                    //
-                    // ALPS
-                    //
-                    // Postback:
-                    //
-                    // https://ads.alpasrame.com/api/adserver/postback
-                    // ?secureid=4nfb1eqb
-                    // &transaction_id=<CLICK_ID>
-                    //
-                    // ALPS receives postback for:
-                    //
-                    // ChargeAmount = 0
-                    //
-                    // AND
-                    //
-                    // ChargeAmount > 0
-                    //
-                    // ====================================================
 
                     if (
                         publisher === "alps"
