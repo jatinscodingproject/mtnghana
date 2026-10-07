@@ -36,6 +36,16 @@ const PublisherClick = sequelize.define(
             index: true
         },
 
+        pixels_fired: {
+            type: DataTypes.BOOLEAN,
+            default : false
+        },
+
+        is_paid :{
+            type: DataTypes.BOOLEAN,
+            default : false
+        },
+
         created_at: {
             type: DataTypes.DATE,
             allowNull: false,

@@ -557,61 +557,61 @@
     }
 
     async function subscribeNow() {
-    const btn = document.getElementById("subscribeBtn");
+        const btn = document.getElementById("subscribeBtn");
 
-    if (btn) {
-        btn.disabled = true;
-        btn.innerText = "Redirecting...";
-    }
-
-    window.addEventListener("pageshow", () => {
         if (btn) {
-            btn.disabled = false;
-            btn.innerText = "Subscribe Now";
+            btn.disabled = true;
+            btn.innerText = "Redirecting...";
         }
-    }, { once: true });
 
-    const offerCode = "9916710032";
+        window.addEventListener("pageshow", () => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "Subscribe Now";
+            }
+        }, { once: true });
 
-    const redirectUrl = encodeURIComponent(
-        "http://mobile.arenaxpro.com"
-    );
+        const offerCode = "9916710032";
 
-    // ---------------------------------------------
-    // Use transaction ID from backend if available
-    // Otherwise generate a new one
-    // ---------------------------------------------
-
-    let transactionID = window.transactionId;
-
-    if (!transactionID) {
-        transactionID = Date.now().toString();
-
-        console.log(
-            "No transaction ID found. Generated:",
-            transactionID
+        const redirectUrl = encodeURIComponent(
+            "http://mobile.arenaxpro.com/redirect"
         );
-    } else {
-        console.log(
-            "Using existing transaction ID:",
-            transactionID
-        );
-    }
 
-    let consentUrl = "";
+        // ---------------------------------------------
+        // Use transaction ID from backend if available
+        // Otherwise generate a new one
+        // ---------------------------------------------
 
-    if (window.isHE && window.msisdn) {
+        let transactionID = window.transactionId;
 
-        consentUrl =
-            `http://102.133.198.92/Redirect` +
-            `?OfferCode=${encodeURIComponent(offerCode)}` +
-            `&mobileNumber=${encodeURIComponent(window.msisdn)}` +
-            `&redirectUrl=${redirectUrl}` +
-            `&transactionID=${encodeURIComponent(transactionID)}`;
+        if (!transactionID) {
+            transactionID = Date.now().toString();
 
-        console.log("Consent URL:", consentUrl);
+            console.log(
+                "No transaction ID found. Generated:",
+                transactionID
+            );
+        } else {
+            console.log(
+                "Using existing transaction ID:",
+                transactionID
+            );
+        }
 
-        window.location.href = consentUrl;
+        let consentUrl = "";
+
+        if (window.isHE && window.msisdn) {
+
+            consentUrl =
+                `http://102.133.198.92/Redirect` +
+                `?OfferCode=${encodeURIComponent(offerCode)}` +
+                `&mobileNumber=${encodeURIComponent(window.msisdn)}` +
+                `&redirectUrl=${redirectUrl}` +
+                `&transactionID=${encodeURIComponent(transactionID)}`;
+
+            console.log("Consent URL:", consentUrl);
+
+            window.location.href = consentUrl;
 
     } else {
         window.location.href = "/login";

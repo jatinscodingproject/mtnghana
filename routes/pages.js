@@ -38,6 +38,7 @@ const PublisherClick = require("../models/publisherClick");
 
 router.get("/redirect", async (req, res) => {
     try {
+        console.log("redirect ==========================================================" , req.headers);
         const {
             CGID,
             transactionID,
@@ -71,9 +72,7 @@ router.get("/redirect", async (req, res) => {
             case "200":
                 console.log("I AM HERE");
                 allowLogin = true;
-
                 message = "Subscription successful.";
-
                 break;
 
 
@@ -124,14 +123,7 @@ router.get("/redirect", async (req, res) => {
 
                 message =
                     "Invalid consent received.";
-
                 break;
-
-
-            // --------------------------------------------------------
-            // CONSENT PROCESSING FAILED
-            // --------------------------------------------------------
-
             case "13":
 
                 message =
@@ -373,6 +365,28 @@ router.get("/redirect", async (req, res) => {
                         ]
                     });
 
+                if (publisherClick) {
+                    await mtnSubscriptionCallback.update(
+                        {
+                            publisher: publisherClick.publisher,
+                            charge_amt: !isNaN(chargeAmountNumber)
+                                ? chargeAmountNumber
+                                : 0
+                        },
+                        {
+                            where: {
+                                transaction_id: String(transactionID)
+                            }
+                        }
+                    );
+
+                    console.log("Callback record updated:", {
+                        transaction_id: transactionID,
+                        publisher: publisherClick.publisher,
+                        charge_amt: chargeAmountNumber
+                    });
+                }
+
 
                 console.log(
                     "Publisher Click Found:",
@@ -412,24 +426,6 @@ router.get("/redirect", async (req, res) => {
                         chargeAmountNumber
                     );
 
-
-                    // ====================================================
-                    // DS - DIGITAL SUNRISE
-                    // ====================================================
-                    //
-                    // Publisher value:
-                    //
-                    // DS
-                    //
-                    // Postback:
-                    //
-                    // https://digitalsunrise10071896.o18.link/p
-                    // ?m=16519
-                    // &tid=<CLICK_ID>
-                    //
-                    // Only send when charge amount > 0.
-                    // ====================================================
-
                     if (
                         (
                             publisher === "ds"
@@ -465,6 +461,18 @@ router.get("/redirect", async (req, res) => {
                                     timeout: 10000
                                 }
                             );
+
+                        if (response.status >= 200 && response.status < 300) {
+                            await publisherClick.update({
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+
+                            console.log("PublisherClick updated:", {
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+                        }
 
 
                         console.log(
@@ -526,7 +534,18 @@ router.get("/redirect", async (req, res) => {
                                     timeout: 10000
                                 }
                             );
+                        
+                        if (response.status >= 200 && response.status < 300) {
+                            await publisherClick.update({
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
 
+                            console.log("PublisherClick updated:", {
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+                        }
 
                         console.log(
                             "Col Sunrese Postback Status:",
@@ -539,8 +558,6 @@ router.get("/redirect", async (req, res) => {
                         );
 
                     }
-
-
 
                     if (
                         publisher === "alps"
@@ -574,6 +591,17 @@ router.get("/redirect", async (req, res) => {
                                 }
                             );
 
+                        if (response.status >= 200 && response.status < 300) {
+                            await publisherClick.update({
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+
+                            console.log("PublisherClick updated:", {
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+                        }
 
                         console.log(
                             "ALPS Postback Status:",
@@ -688,7 +716,6 @@ router.get("/redirect", async (req, res) => {
 });
 
 
-module.exports = router;
 
 
 // router.get("/redirect", async (req, res) => {
@@ -851,6 +878,10 @@ router.post("/notify-callback", async (req, res) => {
                 callbackData[item.name] = item.value;
             });
         }
+
+        const chargeAmount = parseFloat(
+            callbackData.ChargeAmount || 0
+        );
         console.log(callbackData);
         await mtnSubscriptionCallback.create({
             transaction_id: callbackData.TransactionId,
@@ -862,8 +893,12 @@ router.post("/notify-callback", async (req, res) => {
             subscriber_life_cycle: callbackData.SubscriberLifeCycle,
             subscription_status: callbackData.SubscriptionStatus,
             status_code: callbackData.Reason,
+            charge_amt: !isNaN(chargeAmount)
+                ? chargeAmount
+                : 0,
             callback_payload: body,
             is_callback_received: true
+            
         });
 
         return res.status(200).json({

@@ -46,7 +46,7 @@ const MtnSubscriptionCallback = sequelize.define(
         },
 
         status_code: {
-            type: DataTypes.STRING(20),
+            type: DataTypes.STRING(255),
             allowNull: true
         },
 
@@ -62,6 +62,16 @@ const MtnSubscriptionCallback = sequelize.define(
 
         redirect_payload: {
             type: DataTypes.JSON,
+            allowNull: true
+        },
+
+        charge_amt: {
+            type: DataTypes.DECIMAL,
+            allowNull: true
+        },
+
+        publisher: {
+            type: DataTypes.STRING,
             allowNull: true
         },
 
