@@ -440,18 +440,6 @@ router.get("/redirect", async (req, res) => {
                             `&tid=${encodeURIComponent(clickId)}`;
 
 
-                        console.log(
-                            "=========================================="
-                        );
-
-                        console.log(
-                            "DIGITAL SUNRISE POSTBACK"
-                        );
-
-                        console.log(
-                            "Postback URL:",
-                            postbackUrl
-                        );
 
 
                         const response =
@@ -487,18 +475,54 @@ router.get("/redirect", async (req, res) => {
 
                     }
 
+                     if (
+                        (
+                            publisher === "tc"
+                        ) &&
+                        !isNaN(chargeAmountNumber) &&
+                        chargeAmountNumber > 0
+                    ) {
+                        const postbackUrl =
+                            `https://postback.level23.nl/?currency=USD` +
+                            `&handler=10922` +
+                            `&handler=10922` +
+                            `&hash=c2d6b1f24e2cad53e05e08c179174273` +
+                            `&tracker=${encodeURIComponent(clickId)}`;
 
-                    // ====================================================
-                    // COL SUNRESE
-                    // ====================================================
-                    //
-                    // Postback:
-                    //
-                    // http://162.243.217.139/dlv/track.php
-                    // ?ccuid=<CLICK_ID>
-                    //
-                    // Only send when charge amount > 0.
-                    // ====================================================
+                        const response =
+                            await axios.get(
+                                postbackUrl,
+                                {
+                                    timeout: 10000
+                                }
+                            );
+
+                        if (response.status >= 200 && response.status < 300) {
+                            await publisherClick.update({
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+
+                            console.log("PublisherClick updated:", {
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+                        }
+
+
+                        console.log(
+                            "TC Postback Status:",
+                            response.status
+                        );
+
+                        console.log(
+                            "TC Postback Response:",
+                            response.data
+                        );
+
+                    }
+
+
 
                     if (
                         (
