@@ -5,6 +5,7 @@ const fs = require("fs");
 let browser = null;
 let puppeteer = null;
 let browserPromise = null;
+let profileDir = null;
 
 /**
  * Load Puppeteer dynamically.
@@ -22,18 +23,40 @@ async function getPuppeteer() {
 }
 
 /**
- * Create a unique Firefox profile directory.
+ * Create a unique Firefox profile.
+ *
+ * IMPORTANT:
+ * Linux is using Snap Firefox.
+ *
+ * The profile must therefore be inside:
+ *
+ * /root/snap/firefox/common
+ *
+ * Every PM2 process gets its own profile.
  */
 function createFirefoxProfile() {
     const platform = os.platform();
 
-    let baseDirectory;
+    let baseDir;
 
     if (platform === "linux") {
-        baseDirectory = "/tmp";
+
+        /**
+         * Snap Firefox profile location.
+         */
+        baseDir =
+            "/root/snap/firefox/common";
+
     } else if (platform === "win32") {
-        baseDirectory = "C:\\puppeteer";
+
+        /**
+         * Windows Firefox profile location.
+         */
+        baseDir =
+            "C:\\puppeteer";
+
     } else {
+
         throw new Error(
             `Unsupported operating system: ${platform}`
         );
@@ -42,30 +65,31 @@ function createFirefoxProfile() {
     /**
      * Make sure base directory exists.
      */
-    fs.mkdirSync(baseDirectory, {
+    fs.mkdirSync(baseDir, {
         recursive: true,
+        mode: 0o755,
     });
 
     /**
-     * Unique profile based on:
-     * - process ID
-     * - timestamp
+     * Unique profile.
      *
-     * This prevents PM2 workers from sharing
-     * the same Firefox profile.
+     * PID = different PM2 process
+     * Date = different launch
+     * Random = extra uniqueness
      */
     const profileName =
-        `mtnghana-firefox-${process.pid}-${Date.now()}`;
+        `mtnghana-firefox-${process.pid}-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 8)}`;
 
     const profilePath =
         path.join(
-            baseDirectory,
+            baseDir,
             profileName
         );
 
     /**
-     * Create the actual profile folder BEFORE
-     * starting Firefox.
+     * Create profile directory.
      */
     fs.mkdirSync(profilePath, {
         recursive: true,
@@ -73,29 +97,31 @@ function createFirefoxProfile() {
     });
 
     /**
-     * Verify that Firefox profile exists.
+     * Verify profile exists.
      */
     if (!fs.existsSync(profilePath)) {
+
         throw new Error(
-            `Firefox profile could not be created: ${profilePath}`
+            `Firefox profile was not created: ${profilePath}`
         );
     }
 
     /**
-     * Linux permissions.
+     * Set permissions.
      */
-    if (platform === "linux") {
-        try {
-            fs.chmodSync(
-                profilePath,
-                0o700
-            );
-        } catch (error) {
-            console.log(
-                "⚠️ Could not change profile permissions:",
-                error?.message || error
-            );
-        }
+    try {
+
+        fs.chmodSync(
+            profilePath,
+            0o700
+        );
+
+    } catch (error) {
+
+        console.log(
+            "⚠️ Could not set Firefox profile permissions:",
+            error?.message || error
+        );
     }
 
     return profilePath;
@@ -107,21 +133,26 @@ function createFirefoxProfile() {
 async function getBrowser() {
 
     /**
-     * Reuse currently running browser.
+     * Reuse existing browser.
      *
      * Do NOT use browser.isConnected().
      */
     if (browser) {
+
         try {
+
             if (
                 typeof browser.connected === "undefined" ||
                 browser.connected === true
             ) {
+
                 return browser;
             }
+
         } catch (error) {
+
             console.log(
-                "⚠️ Existing Firefox instance is not usable."
+                "⚠️ Existing Firefox instance unavailable."
             );
         }
 
@@ -129,16 +160,18 @@ async function getBrowser() {
     }
 
     /**
-     * If Firefox is already being launched by another
-     * request, wait for that launch.
+     * Prevent multiple simultaneous Firefox
+     * launches inside the same Node process.
      */
     if (browserPromise) {
+
         return browserPromise;
     }
 
     browserPromise = (async () => {
 
-        const platform = os.platform();
+        const platform =
+            os.platform();
 
         const isLinux =
             platform === "linux";
@@ -149,14 +182,17 @@ async function getBrowser() {
         let executablePath;
 
         /**
-         * ==============================
-         * FIREFOX PATH
-         * ==============================
+         * =====================================
+         * FIREFOX EXECUTABLE
+         * =====================================
          */
         if (isLinux) {
 
+            /**
+             * Ubuntu Snap Firefox.
+             */
             executablePath =
-                "/usr/bin/firefox";
+                "/snap/bin/firefox";
 
         } else if (isWindows) {
 
@@ -171,31 +207,7 @@ async function getBrowser() {
         }
 
         /**
-         * ==============================
-         * CREATE UNIQUE PROFILE
-         * ==============================
-         */
-        const userDataDir =
-            createFirefoxProfile();
-
-        console.log(
-            "🚀 Starting Firefox..."
-        );
-
-        console.log(
-            `💻 OS: ${platform}`
-        );
-
-        console.log(
-            `📍 Firefox: ${executablePath}`
-        );
-
-        console.log(
-            `📁 Firefox profile: ${userDataDir}`
-        );
-
-        /**
-         * Verify executable exists.
+         * Verify Firefox executable.
          */
         if (!fs.existsSync(executablePath)) {
 
@@ -204,42 +216,85 @@ async function getBrowser() {
             );
         }
 
+        /**
+         * =====================================
+         * CREATE UNIQUE PROFILE
+         * =====================================
+         */
+        profileDir =
+            createFirefoxProfile();
+
+        console.log(
+            "========================================"
+        );
+
+        console.log(
+            "🚀 Starting Firefox"
+        );
+
+        console.log(
+            `💻 OS: ${platform}`
+        );
+
+        console.log(
+            `🆔 Node PID: ${process.pid}`
+        );
+
+        console.log(
+            `📍 Firefox: ${executablePath}`
+        );
+
+        console.log(
+            `📁 Profile: ${profileDir}`
+        );
+
+        console.log(
+            "========================================"
+        );
+
         try {
 
             const puppeteerLib =
                 await getPuppeteer();
 
             /**
-             * Firefox arguments.
-             *
-             * IMPORTANT:
-             *
-             * We explicitly pass:
-             *
-             *     -profile <directory>
-             *
-             * This avoids the "Could not find profile folder"
-             * problem with the system Firefox installation.
+             * =====================================
+             * FIREFOX ARGUMENTS
+             * =====================================
              */
             const firefoxArgs = [
+                /**
+                 * Allow this Firefox instance to use
+                 * its own profile.
+                 *
+                 * Important when multiple PM2 workers
+                 * are running.
+                 */
                 "-no-remote",
+
+                /**
+                 * Explicit Firefox profile.
+                 */
                 "-profile",
-                userDataDir,
+
+                profileDir,
             ];
 
             /**
-             * Linux-specific options.
+             * Linux server = headless.
              */
             if (isLinux) {
+
                 firefoxArgs.push(
                     "-headless"
                 );
             }
 
             /**
-             * Windows-specific options.
+             * Windows = visible browser.
              */
             if (isWindows) {
+
                 firefoxArgs.push(
                     "-new-instance"
                 );
@@ -251,7 +306,18 @@ async function getBrowser() {
             );
 
             /**
-             * Launch Firefox.
+             * =====================================
+             * LAUNCH FIREFOX
+             * =====================================
+             *
+             * IMPORTANT:
+             *
+             * We do NOT use Puppeteer's userDataDir.
+             *
+             * Firefox receives the profile explicitly
+             * through:
+             *
+             * -profile <profileDir>
              */
             const newBrowser =
                 await puppeteerLib.launch({
@@ -259,21 +325,13 @@ async function getBrowser() {
                     browser: "firefox",
 
                     /**
-                     * We explicitly control headless
-                     * through Firefox arguments.
+                     * Headless is controlled by
+                     * Firefox's -headless argument.
                      */
                     headless: false,
 
                     executablePath,
 
-                    /**
-                     * IMPORTANT:
-                     *
-                     * Do not pass userDataDir here.
-                     *
-                     * We explicitly pass Firefox's
-                     * -profile argument above.
-                     */
                     args: firefoxArgs,
 
                     acceptInsecureCerts: true,
@@ -282,32 +340,33 @@ async function getBrowser() {
 
                     defaultViewport: null,
 
+                    /**
+                     * Keep this enabled while debugging
+                     * Firefox startup.
+                     */
                     dumpio: true,
                 });
 
             /**
-             * Save browser.
+             * Save browser instance.
              */
-            browser = newBrowser;
+            browser =
+                newBrowser;
 
             console.log(
                 "🦊 Firefox launched successfully"
             );
 
             console.log(
-                `💻 OS: ${platform}`
+                `🆔 Node PID: ${process.pid}`
             );
 
             console.log(
-                `📍 Firefox: ${executablePath}`
-            );
-
-            console.log(
-                `📁 Firefox profile: ${userDataDir}`
+                `📁 Firefox profile: ${profileDir}`
             );
 
             /**
-             * Handle Firefox disconnect.
+             * Firefox disconnected.
              */
             browser.on(
                 "disconnected",
@@ -334,6 +393,7 @@ async function getBrowser() {
             );
 
             if (error?.stack) {
+
                 console.error(
                     error.stack
                 );
@@ -342,31 +402,36 @@ async function getBrowser() {
             browser = null;
 
             /**
-             * Do not leave failed profiles behind.
+             * Remove failed profile.
              */
-            try {
+            if (profileDir) {
 
-                fs.rmSync(
-                    userDataDir,
-                    {
-                        recursive: true,
-                        force: true,
-                    }
-                );
+                try {
 
-                console.log(
-                    "🧹 Removed failed Firefox profile:",
-                    userDataDir
-                );
+                    fs.rmSync(
+                        profileDir,
+                        {
+                            recursive: true,
+                            force: true,
+                        }
+                    );
 
-            } catch (cleanupError) {
+                    console.log(
+                        "🧹 Removed failed Firefox profile:",
+                        profileDir
+                    );
 
-                console.log(
-                    "⚠️ Could not remove failed profile:",
-                    cleanupError?.message ||
-                        cleanupError
-                );
+                } catch (cleanupError) {
+
+                    console.error(
+                        "⚠️ Could not remove Firefox profile:",
+                        cleanupError?.message ||
+                            cleanupError
+                    );
+                }
             }
+
+            profileDir = null;
 
             throw error;
         }
@@ -415,6 +480,37 @@ async function closeBrowser() {
     } finally {
 
         browser = null;
+
+        /**
+         * Remove profile after browser closes.
+         */
+        if (profileDir) {
+
+            try {
+
+                fs.rmSync(
+                    profileDir,
+                    {
+                        recursive: true,
+                        force: true,
+                    }
+                );
+
+                console.log(
+                    "🧹 Firefox profile removed:",
+                    profileDir
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "⚠️ Could not remove Firefox profile:",
+                    error?.message || error
+                );
+            }
+
+            profileDir = null;
+        }
 
         console.log(
             "🛑 Firefox closed"
