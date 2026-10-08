@@ -205,7 +205,7 @@ const clickConfirmButton = async ({
          */
         
             try {
-                await consentPage.setViewport({
+                await consentUrl.setViewport({
                     width: 1280,
                     height: 900,
                 });
