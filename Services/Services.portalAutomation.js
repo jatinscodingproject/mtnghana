@@ -300,7 +300,8 @@ try {
         timeout: 30000,
     });
 
-    const recd = await swipeToConfirm(page);
+    await sleep(2000);
+    await swipeToConfirm(consentPage);
 
     console.log(recd);
 
