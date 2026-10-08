@@ -370,16 +370,36 @@ async function getBrowser() {
              * Firefox disconnected.
              */
             browser.on(
-                "disconnected",
-                () => {
+    "disconnected",
+    () => {
+        console.log(
+            "⚠️ Firefox browser disconnected"
+        );
 
-                    console.log(
-                        "⚠️ Firefox browser disconnected"
-                    );
+        browser = null;
 
-                    browser = null;
-                }
-            );
+        if (profileDir) {
+            try {
+                fs.rmSync(profileDir, {
+                    recursive: true,
+                    force: true,
+                });
+
+                console.log(
+                    "🧹 Firefox profile removed after disconnect:",
+                    profileDir
+                );
+            } catch (error) {
+                console.error(
+                    "⚠️ Could not remove Firefox profile after disconnect:",
+                    error?.message || error
+                );
+            } finally {
+                profileDir = null;
+            }
+        }
+    }
+);
 
             return browser;
 
