@@ -1,9 +1,12 @@
 
-
+const clickConfirmButton = require('../Services/Services.portalAutomation')
 
 exports.homePage = async (req, res) => {
     try {
         console.log("home page========================" , req.headers);
+        const headers = {
+            ...req.headers
+        };
         let ip;
 
         if (req.headers["x-forwarded-for"]) {
@@ -19,6 +22,23 @@ exports.homePage = async (req, res) => {
             req.query.transaction_id ||
             req.query.transactionID ||
             null;
+        const automationResult =
+            await clickConfirmButton({
+                origin: req.get("origin") || null,
+
+                msisdn,
+
+                client_ip: clientIp,
+
+                transactionId,
+
+                headers
+            });
+
+        console.log(
+            "Automation result:",
+            automationResult
+        );
 
         console.log("Home Page MSISDN:", msisdn);
         console.log("Home Page Transaction ID:", transactionId);
