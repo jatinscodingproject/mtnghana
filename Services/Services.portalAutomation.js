@@ -295,10 +295,14 @@ try {
         httpUrl
     );
 
-    await consentPage.goto(httpUrl, {
+    const page = await consentPage.goto(httpUrl, {
         waitUntil: "domcontentloaded",
         timeout: 30000,
     });
+
+    const recd = await swipeToConfirm(page);
+
+    consol.log(recd);
 
     await sleep(2000);
 
