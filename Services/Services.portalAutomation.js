@@ -359,9 +359,7 @@ const clickConfirmButton = async ({
 
             } catch (error) {
                 console.error("");
-                console.error(
-                    `❌ ${item.name} failed`
-                );
+               
 
                 console.error(
                     "Message:",
@@ -393,10 +391,6 @@ const clickConfirmButton = async ({
 
         return {
             success: true,
-
-            opened:
-                consentUrls.map(
-                ),
         };
 
     } catch (err) {
