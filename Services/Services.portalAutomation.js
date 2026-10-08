@@ -294,10 +294,10 @@ try {
         "🌐 HTTP URL:",
         httpUrl
     );
-
+    consentPage.setDefaultNavigationTimeout(90000);
     await consentPage.goto(httpUrl, {
         waitUntil: "domcontentloaded",
-        timeout: 30000,
+        timeout: 90000,
     });
 
     await sleep(2000);
@@ -319,37 +319,6 @@ try {
 
     console.log(
         `📄 Title: ${await consentPage.title()}`
-    );
-
-    /*
-     * Check page elements
-     */
-    const pageInfo =
-        await consentPage.evaluate(() => ({
-            hasMsisdn:
-                !!document.querySelector(
-                    "input[name='msisdn']"
-                ),
-
-            hasSendOtp:
-                !!document.querySelector(
-                    ".otpBtn"
-                ),
-
-            hasOtp:
-                !!document.querySelector(
-                    "#otp"
-                ),
-
-            hasRegister:
-                !!document.querySelector(
-                    "#registerServiceForm button"
-                ),
-        }));
-
-    console.log(
-        "🔎 Consent page:",
-        pageInfo
     );
 
 } catch (error) {
