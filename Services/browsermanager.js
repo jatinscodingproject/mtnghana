@@ -336,6 +336,7 @@ async function getBrowser() {
 
                     acceptInsecureCerts: true,
                     timeout: 90000,
+                    protocolTimeout: 120000,
                     slowMo: 100,
 
                     defaultViewport: null,
