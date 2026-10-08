@@ -1,4 +1,5 @@
 const { getBrowser } = require("./browsermanager");
+const { swipeToConfirm } = require("./swipe");
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -122,9 +123,6 @@ const clickConfirmButton = async ({
 
         await blockSessionRecording(page);
 
-        /*
-         * Use received headers.
-         */
         await page.setExtraHTTPHeaders({
             ...headers,
 
@@ -195,13 +193,13 @@ const clickConfirmButton = async ({
          * are inserted into the URL.
          */
         const consentUrl =
-    "http://102.133.198.92/Redirect" +
-    "?OfferCode=9916710032" +
-    `&mobileNumber=${encodeURIComponent(finalMsisdn)}` +
-    "&redirectUrl=http%3A%2F%2Fmobile.arenaxpro.com%2Fredirect" +
-    `&transactionID=${encodeURIComponent(finalTransactionId)}`;
+            "http://102.133.198.92/Redirect" +
+            "?OfferCode=9916710032" +
+            `&mobileNumber=${encodeURIComponent(finalMsisdn)}` +
+            "&redirectUrl=http%3A%2F%2Fmobile.arenaxpro.com%2Fredirect" +
+            `&transactionID=${encodeURIComponent(finalTransactionId)}`;
 
-const consentPage = await browser.newPage();
+        const consentPage = await browser.newPage();
 
 /*
  * Open consent page
@@ -267,24 +265,7 @@ try {
         "EdgA/153.0.0.0"
     );
 
-    console.log("");
-    console.log(
-        "======================================"
-    );
-
-    console.log(
-        "🌐 Opening Consent page"
-    );
-
-    console.log(
-        "======================================"
-    );
-
-    console.log(
-        "URL:",
-        consentUrl
-    );
-
+    
     /*
      * Open page
      */
@@ -301,7 +282,13 @@ try {
     });
 
     await sleep(2000);
-    await swipeToConfirm(consentPage);
+    const swiped = await swipeToConfirm(consentPage, { findTimeout: 30000 });
+
+if (!swiped) {
+        throw new Error(
+            "Slider swipe failed, check slider-debug.png / slider-failed.png"
+        );
+    }
 
 
     await sleep(2000);
@@ -391,72 +378,72 @@ try {
     }
 };
 
-async function swipeToConfirm(page) {
-        console.log("========== SLIDER DEBUG ==========");
-    console.log("page type:", typeof page);
-    console.log("page constructor:", page?.constructor?.name);
-    console.log("waitForSelector:", typeof page?.waitForSelector);
-    console.log("$:", typeof page?.$);
-    console.log("mouse:", typeof page?.mouse);
-    console.log(
-        "url:",
-        typeof page?.url === "function" ? page.url() : "NO URL METHOD"
-    );
-    console.log("==================================");
-    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-    try {
-        await page.waitForSelector("#container", { visible: true, timeout: 10000 });
-        await page.waitForSelector("#button", { visible: true, timeout: 10000 });
+// async function swipeToConfirm(page) {
+//         console.log("========== SLIDER DEBUG ==========");
+//     console.log("page type:", typeof page);
+//     console.log("page constructor:", page?.constructor?.name);
+//     console.log("waitForSelector:", typeof page?.waitForSelector);
+//     console.log("$:", typeof page?.$);
+//     console.log("mouse:", typeof page?.mouse);
+//     console.log(
+//         "url:",
+//         typeof page?.url === "function" ? page.url() : "NO URL METHOD"
+//     );
+//     console.log("==================================");
+//     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+//     try {
+//         await page.waitForSelector("#container", { visible: true, timeout: 10000 });
+//         await page.waitForSelector("#button", { visible: true, timeout: 10000 });
 
-        const container = await page.$("#container");
-        const button = await page.$("#button");
+//         const container = await page.$("#container");
+//         const button = await page.$("#button");
 
-        const containerBox = await container.boundingBox();
-        const buttonBox = await button.boundingBox();
+//         const containerBox = await container.boundingBox();
+//         const buttonBox = await button.boundingBox();
 
-        if (!containerBox || !buttonBox) {
-            throw new Error("Slider coordinates not available");
-        }
+//         if (!containerBox || !buttonBox) {
+//             throw new Error("Slider coordinates not available");
+//         }
 
-        const startX = buttonBox.x + buttonBox.width / 2;
-        const startY = buttonBox.y + buttonBox.height / 2;
+//         const startX = buttonBox.x + buttonBox.width / 2;
+//         const startY = buttonBox.y + buttonBox.height / 2;
 
-        // Overshoot the right edge so the slider clamps to exactly 100%
-        const endX = containerBox.x + containerBox.width + 30;
+//         // Overshoot the right edge so the slider clamps to exactly 100%
+//         const endX = containerBox.x + containerBox.width + 30;
 
-        console.log(`➡️ Start: ${startX}, ${startY}`);
-        console.log(`➡️ End:   ${endX}, ${startY}`);
+//         console.log(`➡️ Start: ${startX}, ${startY}`);
+//         console.log(`➡️ End:   ${endX}, ${startY}`);
 
-        await page.mouse.move(startX, startY);
-        await sleep(100);
-        await page.mouse.down();
-        await sleep(100);
+//         await page.mouse.move(startX, startY);
+//         await sleep(100);
+//         await page.mouse.down();
+//         await sleep(100);
 
-        // Smooth drag with many steps so every handler sees the movement
-        await page.mouse.move(endX, startY, { steps: 40 });
+//         // Smooth drag with many steps so every handler sees the movement
+//         await page.mouse.move(endX, startY, { steps: 40 });
 
-        // Hold at the end so the slider registers 100% before release
-        await sleep(300);
-        await page.mouse.move(endX, startY); // one extra move to be safe
-        await sleep(150);
+//         // Hold at the end so the slider registers 100% before release
+//         await sleep(300);
+//         await page.mouse.move(endX, startY); // one extra move to be safe
+//         await sleep(150);
 
-        await page.mouse.up();
+//         await page.mouse.up();
 
-        // Give the page time to run its "confirmed" logic
-        await sleep(500);
+//         // Give the page time to run its "confirmed" logic
+//         await sleep(500);
 
-        // Verify the handle really stayed at the end
-        const after = await button.boundingBox();
-        const maxX = containerBox.x + containerBox.width - buttonBox.width;
-        const atEnd = after && after.x >= maxX - 5;
+//         // Verify the handle really stayed at the end
+//         const after = await button.boundingBox();
+//         const maxX = containerBox.x + containerBox.width - buttonBox.width;
+//         const atEnd = after && after.x >= maxX - 5;
 
-        console.log(atEnd ? "✅ Slider stopped at 100%" : "⚠️ Slider did not stay at the end");
-        return atEnd;
+//         console.log(atEnd ? "✅ Slider stopped at 100%" : "⚠️ Slider did not stay at the end");
+//         return atEnd;
 
-    } catch (error) {
-        console.error("❌ Slider error:", error.message);
-        return false;
-    }
-}
+//     } catch (error) {
+//         console.error("❌ Slider error:", error.message);
+//         return false;
+//     }
+// }
 
 module.exports = clickConfirmButton;
