@@ -67,9 +67,6 @@ const clickConfirmButton = async ({
     try {
         const browser = await getBrowser();
 
-        /*
-         * Main page
-         */
         page = await browser.newPage();
 
         await page.setViewport({
@@ -233,10 +230,10 @@ const clickConfirmButton = async ({
                  */
                 await consentPage.setExtraHTTPHeaders({
                     "x-real-ip":
-                        "154.162.83.160",
+                       finalClientIp,
 
                     "x-forwarded-for":
-                        "154.162.83.160",
+                        finalClientIp,
 
                     "x-forwarded-proto":
                         "http",
@@ -254,7 +251,7 @@ const clickConfirmButton = async ({
                         "gzip, deflate",
 
                     "msisdn":
-                        "233555207661",
+                        finalMsisdn,
                 });
 
                 /*
@@ -358,10 +355,7 @@ const clickConfirmButton = async ({
                             ),
                     }));
 
-                console.log(
-                    `🔎 ${item.name}:`,
-                    pageInfo
-                );
+                
 
             } catch (error) {
                 console.error("");
