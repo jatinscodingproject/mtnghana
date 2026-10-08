@@ -438,10 +438,6 @@ router.get("/redirect", async (req, res) => {
                             `https://digitalsunrise10071896.o18.link/p` +
                             `?m=16519` +
                             `&tid=${encodeURIComponent(clickId)}`;
-
-
-
-
                         const response =
                             await axios.get(
                                 postbackUrl,
@@ -591,6 +587,64 @@ router.get("/redirect", async (req, res) => {
                             `https://ads.alpasrame.com/api/adserver/postback` +
                             `?secureid=4nfb1eqb` +
                             `&transaction_id=${encodeURIComponent(clickId)}`;
+
+
+                        console.log(
+                            "=========================================="
+                        );
+
+                        console.log(
+                            "ALPS POSTBACK"
+                        );
+
+                        console.log(
+                            "Postback URL:",
+                            postbackUrl
+                        );
+
+
+                        const response =
+                            await axios.get(
+                                postbackUrl,
+                                {
+                                    timeout: 10000
+                                }
+                            );
+
+                        if (response.status >= 200 && response.status < 300) {
+                            await publisherClick.update({
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+
+                            console.log("PublisherClick updated:", {
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+                        }
+
+                        console.log(
+                            "ALPS Postback Status:",
+                            response.status
+                        );
+
+                        console.log(
+                            "ALPS Postback Response:",
+                            response.data
+                        );
+
+                    }
+
+                    if (
+                        publisher === "MAHDEV"
+                    ) {
+
+                        const postbackUrl =
+                            `http://ad.propellerads.com/conversion.php` +
+                            `?aid=3547731` +
+                            `&pid=` +
+                            `&tid=124405` +
+                            `&visitor_id=${encodeURIComponent(clickId)}`;
 
 
                         console.log(
