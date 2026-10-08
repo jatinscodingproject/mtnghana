@@ -396,7 +396,6 @@ const clickConfirmButton = async ({
 
             opened:
                 consentUrls.map(
-                    (item) => item.name
                 ),
         };
 
