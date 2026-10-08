@@ -335,7 +335,7 @@ async function getBrowser() {
                     args: firefoxArgs,
 
                     acceptInsecureCerts: true,
-
+                    timeout: 90000,
                     slowMo: 100,
 
                     defaultViewport: null,
