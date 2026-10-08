@@ -9,8 +9,7 @@ let browserPromise = null;
 /**
  * Load Puppeteer dynamically.
  *
- * Newer Puppeteer versions can be ESM modules,
- * so we use dynamic import instead of require().
+ * Newer Puppeteer versions can be ESM modules.
  */
 async function getPuppeteer() {
     if (!puppeteer) {
@@ -23,16 +22,94 @@ async function getPuppeteer() {
 }
 
 /**
- * Get Firefox browser instance.
+ * Create a unique Firefox profile directory.
+ */
+function createFirefoxProfile() {
+    const platform = os.platform();
+
+    let baseDirectory;
+
+    if (platform === "linux") {
+        baseDirectory = "/tmp";
+    } else if (platform === "win32") {
+        baseDirectory = "C:\\puppeteer";
+    } else {
+        throw new Error(
+            `Unsupported operating system: ${platform}`
+        );
+    }
+
+    /**
+     * Make sure base directory exists.
+     */
+    fs.mkdirSync(baseDirectory, {
+        recursive: true,
+    });
+
+    /**
+     * Unique profile based on:
+     * - process ID
+     * - timestamp
+     *
+     * This prevents PM2 workers from sharing
+     * the same Firefox profile.
+     */
+    const profileName =
+        `mtnghana-firefox-${process.pid}-${Date.now()}`;
+
+    const profilePath =
+        path.join(
+            baseDirectory,
+            profileName
+        );
+
+    /**
+     * Create the actual profile folder BEFORE
+     * starting Firefox.
+     */
+    fs.mkdirSync(profilePath, {
+        recursive: true,
+        mode: 0o700,
+    });
+
+    /**
+     * Verify that Firefox profile exists.
+     */
+    if (!fs.existsSync(profilePath)) {
+        throw new Error(
+            `Firefox profile could not be created: ${profilePath}`
+        );
+    }
+
+    /**
+     * Linux permissions.
+     */
+    if (platform === "linux") {
+        try {
+            fs.chmodSync(
+                profilePath,
+                0o700
+            );
+        } catch (error) {
+            console.log(
+                "⚠️ Could not change profile permissions:",
+                error?.message || error
+            );
+        }
+    }
+
+    return profilePath;
+}
+
+/**
+ * Get Firefox browser.
  */
 async function getBrowser() {
 
     /**
-     * Reuse existing browser.
+     * Reuse currently running browser.
      *
-     * Do NOT use browser.isConnected()
-     * because that function is not available
-     * in your installed Puppeteer version.
+     * Do NOT use browser.isConnected().
      */
     if (browser) {
         try {
@@ -52,9 +129,8 @@ async function getBrowser() {
     }
 
     /**
-     * If another request is already starting Firefox,
-     * wait for that same launch instead of launching
-     * another Firefox instance.
+     * If Firefox is already being launched by another
+     * request, wait for that launch.
      */
     if (browserPromise) {
         return browserPromise;
@@ -64,61 +140,30 @@ async function getBrowser() {
 
         const platform = os.platform();
 
-        const isLinux = platform === "linux";
-        const isWindows = platform === "win32";
+        const isLinux =
+            platform === "linux";
+
+        const isWindows =
+            platform === "win32";
 
         let executablePath;
-        let userDataDir;
 
         /**
          * ==============================
-         * LINUX SERVER
+         * FIREFOX PATH
          * ==============================
          */
         if (isLinux) {
 
-            executablePath = "/usr/bin/firefox";
+            executablePath =
+                "/usr/bin/firefox";
 
-            /**
-             * IMPORTANT:
-             *
-             * Do not use one common Firefox profile
-             * when multiple PM2 processes are running.
-             *
-             * Every PM2 process gets its own profile.
-             */
-            userDataDir = path.join(
-                "/tmp",
-                `mtnghana-firefox-${process.pid}`
-            );
-        }
-
-        /**
-         * ==============================
-         * WINDOWS
-         * ==============================
-         */
-        else if (isWindows) {
+        } else if (isWindows) {
 
             executablePath =
                 "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
 
-            /**
-             * Separate profile for every
-             * Node.js process.
-             */
-            userDataDir = path.join(
-                "C:\\puppeteer",
-                `firefox-profile-${process.pid}`
-            );
-        }
-
-        /**
-         * ==============================
-         * UNSUPPORTED OS
-         * ==============================
-         */
-        else {
+        } else {
 
             throw new Error(
                 `Unsupported operating system: ${platform}`
@@ -126,11 +171,12 @@ async function getBrowser() {
         }
 
         /**
-         * Make sure Firefox profile directory exists.
+         * ==============================
+         * CREATE UNIQUE PROFILE
+         * ==============================
          */
-        fs.mkdirSync(userDataDir, {
-            recursive: true
-        });
+        const userDataDir =
+            createFirefoxProfile();
 
         console.log(
             "🚀 Starting Firefox..."
@@ -148,10 +194,61 @@ async function getBrowser() {
             `📁 Firefox profile: ${userDataDir}`
         );
 
+        /**
+         * Verify executable exists.
+         */
+        if (!fs.existsSync(executablePath)) {
+
+            throw new Error(
+                `Firefox executable not found: ${executablePath}`
+            );
+        }
+
         try {
 
             const puppeteerLib =
                 await getPuppeteer();
+
+            /**
+             * Firefox arguments.
+             *
+             * IMPORTANT:
+             *
+             * We explicitly pass:
+             *
+             *     -profile <directory>
+             *
+             * This avoids the "Could not find profile folder"
+             * problem with the system Firefox installation.
+             */
+            const firefoxArgs = [
+                "-no-remote",
+                "-profile",
+                userDataDir,
+            ];
+
+            /**
+             * Linux-specific options.
+             */
+            if (isLinux) {
+                firefoxArgs.push(
+                    "-headless"
+                );
+            }
+
+            /**
+             * Windows-specific options.
+             */
+            if (isWindows) {
+                firefoxArgs.push(
+                    "-new-instance"
+                );
+            }
+
+            console.log(
+                "🦊 Firefox arguments:",
+                firefoxArgs
+            );
 
             /**
              * Launch Firefox.
@@ -162,59 +259,34 @@ async function getBrowser() {
                     browser: "firefox",
 
                     /**
-                     * Linux server:
-                     * headless mode.
-                     *
-                     * Windows:
-                     * visible Firefox window.
+                     * We explicitly control headless
+                     * through Firefox arguments.
                      */
-                    headless: isLinux
-                        ? true
-                        : false,
+                    headless: false,
 
                     executablePath,
 
-                    userDataDir,
-
                     /**
-                     * Allow invalid/self-signed
-                     * certificates.
+                     * IMPORTANT:
+                     *
+                     * Do not pass userDataDir here.
+                     *
+                     * We explicitly pass Firefox's
+                     * -profile argument above.
                      */
+                    args: firefoxArgs,
+
                     acceptInsecureCerts: true,
 
-                    /**
-                     * Small delay between Puppeteer
-                     * actions for stability.
-                     */
                     slowMo: 100,
 
                     defaultViewport: null,
 
-                    args: [
-
-                        "--no-sandbox",
-
-                        "--disable-setuid-sandbox",
-
-                        "--disable-dev-shm-usage",
-
-                        "--disable-infobars",
-
-                        /**
-                         * Windows only.
-                         */
-                        ...(isWindows
-                            ? [
-                                "--start-maximized"
-                            ]
-                            : [])
-                    ],
-
-                    dumpio: false
+                    dumpio: true,
                 });
 
             /**
-             * Save browser instance.
+             * Save browser.
              */
             browser = newBrowser;
 
@@ -222,8 +294,20 @@ async function getBrowser() {
                 "🦊 Firefox launched successfully"
             );
 
+            console.log(
+                `💻 OS: ${platform}`
+            );
+
+            console.log(
+                `📍 Firefox: ${executablePath}`
+            );
+
+            console.log(
+                `📁 Firefox profile: ${userDataDir}`
+            );
+
             /**
-             * Handle Firefox closing/crashing.
+             * Handle Firefox disconnect.
              */
             browser.on(
                 "disconnected",
@@ -257,6 +341,33 @@ async function getBrowser() {
 
             browser = null;
 
+            /**
+             * Do not leave failed profiles behind.
+             */
+            try {
+
+                fs.rmSync(
+                    userDataDir,
+                    {
+                        recursive: true,
+                        force: true,
+                    }
+                );
+
+                console.log(
+                    "🧹 Removed failed Firefox profile:",
+                    userDataDir
+                );
+
+            } catch (cleanupError) {
+
+                console.log(
+                    "⚠️ Could not remove failed profile:",
+                    cleanupError?.message ||
+                        cleanupError
+                );
+            }
+
             throw error;
         }
 
@@ -268,16 +379,12 @@ async function getBrowser() {
 
     } finally {
 
-        /**
-         * Allow future launch attempts
-         * after this launch finishes.
-         */
         browserPromise = null;
     }
 }
 
 /**
- * Close Firefox browser.
+ * Close Firefox.
  */
 async function closeBrowser() {
 
@@ -316,9 +423,9 @@ async function closeBrowser() {
 }
 
 /**
- * Export functions.
+ * Export.
  */
 module.exports = {
     getBrowser,
-    closeBrowser
+    closeBrowser,
 };
