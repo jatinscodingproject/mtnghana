@@ -195,181 +195,178 @@ const clickConfirmButton = async ({
          * are inserted into the URL.
          */
         const consentUrl =
-            "http://102.133.198.92/Redirect" +
-            "?OfferCode=9916710032" +
-            `&mobileNumber=${encodeURIComponent(finalMsisdn)}` +
-            "&redirectUrl=http%3A%2F%2Fmobile.arenaxpro.com%2Fredirect" +
-            `&transactionID=${encodeURIComponent(finalTransactionId)}`;
-        /*
-         * Open every consent page in its own tab
-         */
-        
-            try {
-                await consentUrl.setViewport({
-                    width: 1280,
-                    height: 900,
-                });
+    "http://102.133.198.92/Redirect" +
+    "?OfferCode=9916710032" +
+    `&mobileNumber=${encodeURIComponent(finalMsisdn)}` +
+    "&redirectUrl=http%3A%2F%2Fmobile.arenaxpro.com%2Fredirect" +
+    `&transactionID=${encodeURIComponent(finalTransactionId)}`;
 
-                /*
-                 * IMPORTANT:
-                 *
-                 * Enable request interception BEFORE goto().
-                 *
-                 * This prevents:
-                 *
-                 * POST /save-recording?sc=nigeria
-                 *
-                 * from being sent.
-                 */
-                await blockSessionRecording(
-                    consentPage
-                );
+const consentPage = await browser.newPage();
 
-                /*
-                 * HTTP headers
-                 */
-                await consentPage.setExtraHTTPHeaders({
-                    "x-real-ip":
-                       finalClientIp,
+/*
+ * Open consent page
+ */
 
-                    "x-forwarded-for":
-                        finalClientIp,
+try {
+    await consentPage.setViewport({
+        width: 1280,
+        height: 900,
+    });
 
-                    "x-forwarded-proto":
-                        "http",
+    /*
+     * IMPORTANT:
+     *
+     * Enable request interception BEFORE goto().
+     *
+     * This prevents:
+     *
+     * POST /save-recording?sc=nigeria
+     *
+     * from being sent.
+     */
+    await blockSessionRecording(
+        consentPage
+    );
 
-                    "upgrade-insecure-requests":
-                        "1",
+    /*
+     * HTTP headers
+     */
+    await consentPage.setExtraHTTPHeaders({
+        "x-real-ip":
+            finalClientIp,
 
-                    "accept":
-                        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "x-forwarded-for":
+            finalClientIp,
 
-                    "accept-language":
-                        "en-US,en;q=0.9",
+        "x-forwarded-proto":
+            "http",
 
-                    "accept-encoding":
-                        "gzip, deflate",
+        "upgrade-insecure-requests":
+            "1",
 
-                    "msisdn":
-                        finalMsisdn,
-                });
+        "accept":
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
 
-                /*
-                 * Android Edge User-Agent
-                 */
-                await consentPage.setUserAgent(
-                    "Mozilla/5.0 (Linux; Android 10; K) " +
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                    "Chrome/153.0.0.0 Mobile Safari/537.36 " +
-                    "EdgA/153.0.0.0"
-                );
+        "accept-language":
+            "en-US,en;q=0.9",
 
-                console.log("");
-                console.log(
-                    "======================================"
-                );
+        "accept-encoding":
+            "gzip, deflate",
 
-              
+        "msisdn":
+            finalMsisdn,
+    });
 
-                console.log(
-                    "======================================"
-                );
+    /*
+     * Android Edge User-Agent
+     */
+    await consentPage.setUserAgent(
+        "Mozilla/5.0 (Linux; Android 10; K) " +
+        "AppleWebKit/537.36 (KHTML, like Gecko) " +
+        "Chrome/153.0.0.0 Mobile Safari/537.36 " +
+        "EdgA/153.0.0.0"
+    );
 
-                console.log(
-                    "URL:",
-                    consentUrl
-                );
+    console.log("");
+    console.log(
+        "======================================"
+    );
 
-                /*
-                 * Open page
-                 */
-                const httpUrl = forceHttp(consentUrl);
+    console.log(
+        "🌐 Opening Consent page"
+    );
 
-                console.log("🌐 HTTP URL:", httpUrl);
+    console.log(
+        "======================================"
+    );
 
-                await consentPage.goto(httpUrl, {
-                    waitUntil: "domcontentloaded",
-                    timeout: 30000,
-                });
+    console.log(
+        "URL:",
+        consentUrl
+    );
 
-                await sleep(2000);
-                const sliderSuccess = await swipeToConfirm(consentPage);
+    /*
+     * Open page
+     */
+    const httpUrl = forceHttp(consentUrl);
 
-                if (sliderSuccess) {
-                    console.log("✅ Slider completed successfully");
-                    console.log("⏳ Waiting 10 seconds before closing browser...");
+    console.log(
+        "🌐 HTTP URL:",
+        httpUrl
+    );
 
-                    await sleep(10000);
+    await consentPage.goto(httpUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+    });
 
-                    console.log("🔴 Closing browser...");
+    await sleep(2000);
 
-                    await browser.close();
+    /*
+     * Keep consent interaction manual.
+     */
+    console.log(
+        "⏸️ Consent page is open for manual authorized interaction."
+    );
 
-                    console.log("✅ Browser closed");
+    console.log(
+        `📍 URL: ${consentPage.url()}`
+    );
 
-                    return {
-                        success: true,
-                        message: "Slider completed and browser closed after 10 seconds",
-                    };
-                }
+    console.log(
+        `📄 Title: ${await consentPage.title()}`
+    );
 
-                console.log("⚠️ Slider was not completed");
-               
+    /*
+     * Check page elements
+     */
+    const pageInfo =
+        await consentPage.evaluate(() => ({
+            hasMsisdn:
+                !!document.querySelector(
+                    "input[name='msisdn']"
+                ),
 
-                console.log(
-                    `📍 URL: ${consentPage.url()}`
-                );
+            hasSendOtp:
+                !!document.querySelector(
+                    ".otpBtn"
+                ),
 
-                console.log(
-                    `📄 Title: ${await consentPage.title()}`
-                );
+            hasOtp:
+                !!document.querySelector(
+                    "#otp"
+                ),
 
-                /*
-                 * Check page elements
-                 */
-                const pageInfo =
-                    await consentPage.evaluate(() => ({
-                        hasMsisdn:
-                            !!document.querySelector(
-                                "input[name='msisdn']"
-                            ),
+            hasRegister:
+                !!document.querySelector(
+                    "#registerServiceForm button"
+                ),
+        }));
 
-                        hasSendOtp:
-                            !!document.querySelector(
-                                ".otpBtn"
-                            ),
+    console.log(
+        "🔎 Consent page:",
+        pageInfo
+    );
 
-                        hasOtp:
-                            !!document.querySelector(
-                                "#otp"
-                            ),
+} catch (error) {
+    console.error("");
 
-                        hasRegister:
-                            !!document.querySelector(
-                                "#registerServiceForm button"
-                            ),
-                    }));
+    console.error(
+        "❌ Consent page failed"
+    );
 
-                
+    console.error(
+        "Message:",
+        error?.message || error
+    );
 
-            } catch (error) {
-                console.error("");
-               
-
-                console.error(
-                    "Message:",
-                    error?.message || error
-                );
-
-                if (error?.stack) {
-                    console.error(
-                        "Stack:",
-                        error.stack
-                    );
-                }
-            }
-        
-
+    if (error?.stack) {
+        console.error(
+            "Stack:",
+            error.stack
+        );
+    }
+}
         /*
          * Keep tabs open for manual authorized interaction
          */
