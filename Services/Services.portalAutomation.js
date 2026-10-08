@@ -295,7 +295,7 @@ try {
         httpUrl
     );
 
-    const page = await consentPage.goto(httpUrl, {
+    await consentPage.goto(httpUrl, {
         waitUntil: "domcontentloaded",
         timeout: 30000,
     });
