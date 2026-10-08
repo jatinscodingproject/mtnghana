@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer");
+const os = require("os");
 
 let browser = null;
 
@@ -7,31 +8,76 @@ async function getBrowser() {
         return browser;
     }
 
+    const isLinux = os.platform() === "linux";
+    const isWindows = os.platform() === "win32";
+
+    let executablePath;
+    let userDataDir;
+
+    if (isLinux) {
+        // Linux Firefox
+        executablePath = "/usr/bin/firefox";
+        userDataDir = "/root/puppeteer/firefox-profile";
+    } else if (isWindows) {
+        // Windows Firefox
+        executablePath =
+            "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
+
+        userDataDir =
+            "C:\\puppeteer\\firefox-profile";
+    } else {
+        throw new Error(
+            `Unsupported operating system: ${os.platform()}`
+        );
+    }
+
     try {
         browser = await puppeteer.launch({
             browser: "firefox",
 
-            headless: false,
+            /*
+             * Linux server:
+             * Run headless.
+             *
+             * Windows:
+             * Show Firefox normally.
+             */
+            headless: isLinux ? true : false,
 
-            executablePath: "/usr/bin/firefox",
+            executablePath,
+
+            userDataDir,
+
+            acceptInsecureCerts: true,
 
             slowMo: 100,
 
             defaultViewport: null,
 
-            acceptInsecureCerts: true,
+            args: [
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-infobars",
+
+                ...(isLinux
+                    ? []
+                    : ["--start-maximized"]),
+            ],
 
             dumpio: false,
-
-            userDataDir: undefined,
         });
 
         console.log(
-            "🦊 Firefox launched successfully"
+            `🦊 Firefox launched successfully`
         );
 
         console.log(
-            "📍 Firefox path: /usr/bin/firefox"
+            `💻 OS: ${os.platform()}`
+        );
+
+        console.log(
+            `📍 Firefox: ${executablePath}`
         );
 
         browser.on("disconnected", () => {
@@ -63,6 +109,26 @@ async function getBrowser() {
     }
 }
 
+async function closeBrowser() {
+    if (browser) {
+        try {
+            await browser.close();
+        } catch (error) {
+            console.error(
+                "❌ Error closing Firefox:",
+                error?.message || error
+            );
+        }
+
+        browser = null;
+
+        console.log(
+            "🛑 Firefox closed"
+        );
+    }
+}
+
 module.exports = {
     getBrowser,
+    closeBrowser
 };
