@@ -282,7 +282,7 @@ const clickConfirmButton = async ({
 
                 console.log(
                     "URL:",
-                    item.url
+                    consentUrl
                 );
 
                 /*
