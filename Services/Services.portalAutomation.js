@@ -423,6 +423,17 @@ try {
 };
 
 async function swipeToConfirm(page) {
+        console.log("========== SLIDER DEBUG ==========");
+    console.log("page type:", typeof page);
+    console.log("page constructor:", page?.constructor?.name);
+    console.log("waitForSelector:", typeof page?.waitForSelector);
+    console.log("$:", typeof page?.$);
+    console.log("mouse:", typeof page?.mouse);
+    console.log(
+        "url:",
+        typeof page?.url === "function" ? page.url() : "NO URL METHOD"
+    );
+    console.log("==================================");
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     try {
         await page.waitForSelector("#container", { visible: true, timeout: 10000 });
