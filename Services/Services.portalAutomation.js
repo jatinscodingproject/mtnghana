@@ -303,7 +303,6 @@ try {
     await sleep(2000);
     await swipeToConfirm(consentPage);
 
-    console.log(recd);
 
     await sleep(2000);
 
