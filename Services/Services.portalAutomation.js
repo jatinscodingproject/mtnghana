@@ -269,9 +269,7 @@ const clickConfirmButton = async ({
                     "======================================"
                 );
 
-                console.log(
-                    `🌐 Opening ${item.name}`
-                );
+              
 
                 console.log(
                     "======================================"
@@ -287,7 +285,6 @@ const clickConfirmButton = async ({
                  */
                 const httpUrl = forceHttp(consentUrl);
 
-                console.log("🔄 Original URL:", item.url);
                 console.log("🌐 HTTP URL:", httpUrl);
 
                 await consentPage.goto(httpUrl, {
@@ -317,9 +314,7 @@ const clickConfirmButton = async ({
                 }
 
                 console.log("⚠️ Slider was not completed");
-                console.log(
-                    `✅ ${item.name} loaded`
-                );
+               
 
                 console.log(
                     `📍 URL: ${consentPage.url()}`
