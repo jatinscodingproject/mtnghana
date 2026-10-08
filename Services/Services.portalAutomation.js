@@ -302,7 +302,7 @@ try {
 
     const recd = await swipeToConfirm(page);
 
-    consol.log(recd);
+    console.log(recd);
 
     await sleep(2000);
 
