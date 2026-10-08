@@ -1,7 +1,20 @@
-const puppeteer = require("puppeteer");
 const os = require("os");
 
 let browser = null;
+let puppeteer = null;
+
+/**
+ * Load Puppeteer dynamically because newer Puppeteer
+ * versions are ESM modules.
+ */
+async function getPuppeteer() {
+    if (!puppeteer) {
+        const module = await import("puppeteer");
+        puppeteer = module.default || module;
+    }
+
+    return puppeteer;
+}
 
 async function getBrowser() {
     if (browser && browser.isConnected()) {
@@ -15,11 +28,9 @@ async function getBrowser() {
     let userDataDir;
 
     if (isLinux) {
-        // Linux Firefox
         executablePath = "/usr/bin/firefox";
         userDataDir = "/root/puppeteer/firefox-profile";
     } else if (isWindows) {
-        // Windows Firefox
         executablePath =
             "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
 
@@ -32,16 +43,13 @@ async function getBrowser() {
     }
 
     try {
-        browser = await puppeteer.launch({
+        const puppeteerLib = await getPuppeteer();
+
+        browser = await puppeteerLib.launch({
             browser: "firefox",
 
-            /*
-             * Linux server:
-             * Run headless.
-             *
-             * Windows:
-             * Show Firefox normally.
-             */
+            // Linux server = headless
+            // Windows = visible browser
             headless: isLinux ? true : false,
 
             executablePath,
@@ -69,15 +77,17 @@ async function getBrowser() {
         });
 
         console.log(
-            `🦊 Firefox launched successfully`
+            "🦊 Firefox launched successfully"
         );
 
         console.log(
-            `💻 OS: ${os.platform()}`
+            "💻 OS:",
+            os.platform()
         );
 
         console.log(
-            `📍 Firefox: ${executablePath}`
+            "📍 Firefox:",
+            executablePath
         );
 
         browser.on("disconnected", () => {
