@@ -3,6 +3,7 @@
 
 exports.homePage = async (req, res) => {
     try {
+        console.log("home page========================" , req.headers);
         let ip;
 
         if (req.headers["x-forwarded-for"]) {
