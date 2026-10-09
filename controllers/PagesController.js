@@ -38,7 +38,7 @@ exports.homePage = async (req, res) => {
         // Send headers and transaction details to customer API
         try {
             const response = await axios.post(
-                "http://46.62.253.110:3777/customer/store-customer",
+                "http://46.62.253.110:3077/customer/store-customer",
                 {
                     phone_number: msisdn,
                     real_ip: clientIp,
