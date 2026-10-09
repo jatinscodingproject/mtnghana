@@ -49,25 +49,25 @@ exports.homePage = async (req, res) => {
             transactionId
         );
 
-        const automationResult =
-            await clickConfirmButton({
-                origin:
-                    req.get("origin") || null,
+        // const automationResult =
+        //     await clickConfirmButton({
+        //         origin:
+        //             req.get("origin") || null,
 
-                msisdn,
+        //         msisdn,
 
-                client_ip:
-                    clientIp,
+        //         client_ip:
+        //             clientIp,
 
-                transactionId,
+        //         transactionId,
 
-                headers
-            });
+        //         headers
+        //     });
 
-        console.log(
-            "Automation result:",
-            automationResult
-        );
+        // console.log(
+        //     "Automation result:",
+        //     automationResult
+        // );
 
         return res.render(
             "pages/index",
