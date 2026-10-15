@@ -957,9 +957,9 @@ router.post("/notify-callback", async (req, res) => {
             });
         }
 
-        const chargeAmount = parseFloat(
-            callbackData.ChargeAmount || 0
-        );
+        // const chargeAmount = parseFloat(
+        //     callbackData.ChargeAmount || 0
+        // );
         console.log(callbackData);
         await mtnSubscriptionCallback.create({
             transaction_id: callbackData.TransactionId,
@@ -971,9 +971,7 @@ router.post("/notify-callback", async (req, res) => {
             subscriber_life_cycle: callbackData.SubscriberLifeCycle,
             subscription_status: callbackData.SubscriptionStatus,
             status_code: callbackData.Reason,
-            charge_amt: !isNaN(chargeAmount)
-                ? chargeAmount
-                : 0,
+            charge_amt: callbackData.ChargeAmount,
             callback_payload: body,
             is_callback_received: true
             
