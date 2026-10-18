@@ -265,24 +265,11 @@ router.get("/redirect", async (req, res) => {
 
                 break;
             }
-
-
-            // --------------------------------------------------------
-            // REQUEST ALREADY EXISTS
-            // --------------------------------------------------------
-
             case "644":
 
                 message =
                     "A subscription request already exists. Please try again later.";
-
                 break;
-
-
-            // --------------------------------------------------------
-            // SUBSCRIPTION FAILED
-            // --------------------------------------------------------
-
             case "1":
 
             case "91":
@@ -293,437 +280,355 @@ router.get("/redirect", async (req, res) => {
                     "Subscription failed. Please try again.";
 
                 break;
-
-
-            // --------------------------------------------------------
-            // DEFAULT
-            // --------------------------------------------------------
-
             default:
-
                 message =
                     "Unable to process your subscription.";
 
                 break;
         }
 
+        try {
 
-        // ============================================================
-        // PUBLISHER POSTBACK
-        // ============================================================
-        //
-        // Publisher mapping:
-        //
-        // 1. DS / DigitalSunrise
-        // 2. Col Sunrese
-        // 3. ALPS
-        //
-        // Transaction matching:
-        //
-        // ClientTransactionId
-        //          |
-        //          v
-        // publisher_clicks.transaction_id
-        //
-        // After matching the record:
-        //
-        // publisher_clicks.click_id
-        //          |
-        //          v
-        // Publisher postback
-        //
-        // DS and Col Sunrese:
-        //      Only send when ChargeAmount > 0
-        //
-        // ALPS:
-        //      Send when ChargeAmount = 0
-        //      Send when ChargeAmount > 0
-        //
-        // ============================================================
-
-        // try {
-
-        //     const chargeAmountNumber =
-        //         parseFloat(charge);
+            const chargeAmountNumber =
+                parseFloat(charge);
 
 
-        //     if (clientTxnId) {
+            if (clientTxnId) {
 
-        //         console.log(
-        //             "Searching publisher_clicks using ClientTransactionId:",
-        //             clientTxnId
-        //         );
-        //         const publisherClick =
-        //             await PublisherClick.findOne({
+                console.log(
+                    "Searching publisher_clicks using ClientTransactionId:",
+                    clientTxnId
+                );
+                const publisherClick =
+                    await PublisherClick.findOne({
 
-        //                 where: {
-        //                     transaction_id: String(clientTxnId)
-        //                 },
+                        where: {
+                            transaction_id: String(clientTxnId)
+                        },
 
-        //                 order: [
-        //                     ["created_at", "DESC"]
-        //                 ]
-        //             });
+                        order: [
+                            ["created_at", "DESC"]
+                        ]
+                    });
 
-        //         if (publisherClick) {
-        //             await mtnSubscriptionCallback.update(
-        //                 {
-        //                     publisher: publisherClick.publisher,
-        //                     charge_amt: !isNaN(chargeAmountNumber)
-        //                         ? chargeAmountNumber
-        //                         : 0
-        //                 },
-        //                 {
-        //                     where: {
-        //                         transaction_id: String(transactionID)
-        //                     }
-        //                 }
-        //             );
+                if (publisherClick) {
+                    await mtnSubscriptionCallback.update(
+                        {
+                            publisher: publisherClick.publisher,
+                            charge_amt: !isNaN(chargeAmountNumber)
+                                ? chargeAmountNumber
+                                : 0
+                        },
+                        {
+                            where: {
+                                transaction_id: String(transactionID)
+                            }
+                        }
+                    );
 
-        //             console.log("Callback record updated:", {
-        //                 transaction_id: transactionID,
-        //                 publisher: publisherClick.publisher,
-        //                 charge_amt: chargeAmountNumber
-        //             });
-        //         }
-
-
-        //         console.log(
-        //             "Publisher Click Found:",
-        //             publisherClick
-        //         );
+                    console.log("Callback record updated:", {
+                        transaction_id: transactionID,
+                        publisher: publisherClick.publisher,
+                        charge_amt: chargeAmountNumber
+                    });
+                }
 
 
-        //         if (
-        //             publisherClick &&
-        //             publisherClick.click_id
-        //         ) {
-
-        //             const clickId =
-        //                 publisherClick.click_id;
+                console.log(
+                    "Publisher Click Found:",
+                    publisherClick
+                );
 
 
-        //             const publisher =
-        //                 String(
-        //                     publisherClick.publisher || ""
-        //                 )
-        //                 .trim()
-        //                 .toLowerCase();
+                if (
+                    publisherClick &&
+                    publisherClick.click_id
+                ) {
+
+                    const clickId =
+                        publisherClick.click_id;
 
 
-        //             console.log(
-        //                 "Publisher:",
-        //                 publisher
-        //             );
-
-        //             console.log(
-        //                 "Click ID:",
-        //                 clickId
-        //             );
-
-        //             console.log(
-        //                 "Charge Amount:",
-        //                 chargeAmountNumber
-        //             );
-
-        //             if (
-        //                 (
-        //                     publisher === "ds"
-        //                 ) &&
-        //                 !isNaN(chargeAmountNumber) &&
-        //                 chargeAmountNumber > 0
-        //             ) {
-
-        //                 const postbackUrl =
-        //                     `https://digitalsunrise10071896.o18.link/p` +
-        //                     `?m=16519` +
-        //                     `&tid=${encodeURIComponent(clickId)}`;
-        //                 const response =
-        //                     await axios.get(
-        //                         postbackUrl,
-        //                         {
-        //                             timeout: 10000
-        //                         }
-        //                     );
-
-        //                 if (response.status >= 200 && response.status < 300) {
-        //                     await publisherClick.update({
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
-
-        //                     console.log("PublisherClick updated:", {
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
-        //                 }
+                    const publisher =
+                        String(
+                            publisherClick.publisher || ""
+                        )
+                        .trim()
+                        .toLowerCase();
 
 
-        //                 console.log(
-        //                     "DigitalSunrise Postback Status:",
-        //                     response.status
-        //                 );
+                    if (
+                        (
+                            publisher === "MAHDEV"
+                        ) &&
+                        !isNaN(chargeAmountNumber) &&
+                        chargeAmountNumber >= 0
+                    ) {
 
-        //                 console.log(
-        //                     "DigitalSunrise Postback Response:",
-        //                     response.data
-        //                 );
+                        const postbackUrl =
+                            `https://url.promotrking.com/advertiser/advertiser-callback?client=BMD&service=Arena&publisher=Prop` +
+                            `?m=16519` +
+                            `&ext_ref=${encodeURIComponent(clickId)}`;
+                        const response =
+                            await axios.get(
+                                postbackUrl,
+                                {
+                                    timeout: 10000
+                                }
+                            );
 
-        //             }
-
-        //              if (
-        //                 (
-        //                     publisher === "tc"
-        //                 ) &&
-        //                 !isNaN(chargeAmountNumber) &&
-        //                 chargeAmountNumber > 0
-        //             ) {
-        //                 const postbackUrl =
-        //                     `https://postback.level23.nl/?currency=USD` +
-        //                     `&handler=10922` +
-        //                     `&handler=10922` +
-        //                     `&hash=c2d6b1f24e2cad53e05e08c179174273` +
-        //                     `&tracker=${encodeURIComponent(clickId)}`;
-
-        //                 const response =
-        //                     await axios.get(
-        //                         postbackUrl,
-        //                         {
-        //                             timeout: 10000
-        //                         }
-        //                     );
-
-        //                 if (response.status >= 200 && response.status < 300) {
-        //                     await publisherClick.update({
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
-
-        //                     console.log("PublisherClick updated:", {
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
-        //                 }
+                        if (response.status >= 200 && response.status < 300) {
+                            await publisherClick.update({
+                                pixels_fired: true,
+                                is_paid: chargeAmountNumber > 0
+                            });
+                        }
 
 
-        //                 console.log(
-        //                     "TC Postback Status:",
-        //                     response.status
-        //                 );
+                        console.log(
+                            "MAHADEV Postback Status:",
+                            response.status
+                        );
 
-        //                 console.log(
-        //                     "TC Postback Response:",
-        //                     response.data
-        //                 );
+                        console.log(
+                            "MAHADEV Postback Response:",
+                            response.data
+                        );
 
-        //             }
+                    }
+
+                    //  if (
+                    //     (
+                    //         publisher === "tc"
+                    //     ) &&
+                    //     !isNaN(chargeAmountNumber) &&
+                    //     chargeAmountNumber > 0
+                    // ) {
+                    //     const postbackUrl =
+                    //         `https://postback.level23.nl/?currency=USD` +
+                    //         `&handler=10922` +
+                    //         `&handler=10922` +
+                    //         `&hash=c2d6b1f24e2cad53e05e08c179174273` +
+                    //         `&tracker=${encodeURIComponent(clickId)}`;
+
+                    //     const response =
+                    //         await axios.get(
+                    //             postbackUrl,
+                    //             {
+                    //                 timeout: 10000
+                    //             }
+                    //         );
+
+                    //     if (response.status >= 200 && response.status < 300) {
+                    //         await publisherClick.update({
+                    //             pixels_fired: true,
+                    //             is_paid: chargeAmountNumber > 0
+                    //         });
+
+                    //         console.log("PublisherClick updated:", {
+                    //             pixels_fired: true,
+                    //             is_paid: chargeAmountNumber > 0
+                    //         });
+                    //     }
 
 
+                    //     console.log(
+                    //         "TC Postback Status:",
+                    //         response.status
+                    //     );
 
-        //             if (
-        //                 (
-        //                     publisher === "col"
-        //                 ) &&
-        //                 !isNaN(chargeAmountNumber) &&
-        //                 chargeAmountNumber > 0
-        //             ) {
+                    //     console.log(
+                    //         "TC Postback Response:",
+                    //         response.data
+                    //     );
 
-        //                 const postbackUrl =
-        //                     `http://162.243.217.139/dlv/track.php` +
-        //                     `?ccuid=${encodeURIComponent(clickId)}`;
+                    // }
+                    // if (
+                    //     (
+                    //         publisher === "col"
+                    //     ) &&
+                    //     !isNaN(chargeAmountNumber) &&
+                    //     chargeAmountNumber > 0
+                    // ) {
 
+                    //     const postbackUrl =
+                    //         `http://162.243.217.139/dlv/track.php` +
+                    //         `?ccuid=${encodeURIComponent(clickId)}`;
 
-        //                 console.log(
-        //                     "=========================================="
-        //                 );
-
-        //                 console.log(
-        //                     "COL SUNRESE POSTBACK"
-        //                 );
-
-        //                 console.log(
-        //                     "Postback URL:",
-        //                     postbackUrl
-        //                 );
-
-
-        //                 const response =
-        //                     await axios.get(
-        //                         postbackUrl,
-        //                         {
-        //                             timeout: 10000
-        //                         }
-        //                     );
+                    //     const response =
+                    //         await axios.get(
+                    //             postbackUrl,
+                    //             {
+                    //                 timeout: 10000
+                    //             }
+                    //         );
                         
-        //                 if (response.status >= 200 && response.status < 300) {
-        //                     await publisherClick.update({
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
+                    //     if (response.status >= 200 && response.status < 300) {
+                    //         await publisherClick.update({
+                    //             pixels_fired: true,
+                    //             is_paid: chargeAmountNumber > 0
+                    //         });
 
-        //                     console.log("PublisherClick updated:", {
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
-        //                 }
+                    //         console.log("PublisherClick updated:", {
+                    //             pixels_fired: true,
+                    //             is_paid: chargeAmountNumber > 0
+                    //         });
+                    //     }
 
-        //                 console.log(
-        //                     "Col Sunrese Postback Status:",
-        //                     response.status
-        //                 );
+                    //     console.log(
+                    //         "Col Sunrese Postback Status:",
+                    //         response.status
+                    //     );
 
-        //                 console.log(
-        //                     "Col Sunrese Postback Response:",
-        //                     response.data
-        //                 );
+                    //     console.log(
+                    //         "Col Sunrese Postback Response:",
+                    //         response.data
+                    //     );
 
-        //             }
+                    // }
 
-        //             if (
-        //                 publisher === "alps"
-        //             ) {
+                    // if (
+                    //     publisher === "alps"
+                    // ) {
 
-        //                 const postbackUrl =
-        //                     `https://ads.alpasrame.com/api/adserver/postback` +
-        //                     `?secureid=4nfb1eqb` +
-        //                     `&transaction_id=${encodeURIComponent(clickId)}`;
-
-
-        //                 console.log(
-        //                     "=========================================="
-        //                 );
-
-        //                 console.log(
-        //                     "ALPS POSTBACK"
-        //                 );
-
-        //                 console.log(
-        //                     "Postback URL:",
-        //                     postbackUrl
-        //                 );
+                    //     const postbackUrl =
+                    //         `https://ads.alpasrame.com/api/adserver/postback` +
+                    //         `?secureid=4nfb1eqb` +
+                    //         `&transaction_id=${encodeURIComponent(clickId)}`;
 
 
-        //                 const response =
-        //                     await axios.get(
-        //                         postbackUrl,
-        //                         {
-        //                             timeout: 10000
-        //                         }
-        //                     );
+                    //     console.log(
+                    //         "=========================================="
+                    //     );
 
-        //                 if (response.status >= 200 && response.status < 300) {
-        //                     await publisherClick.update({
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
+                    //     console.log(
+                    //         "ALPS POSTBACK"
+                    //     );
 
-        //                     console.log("PublisherClick updated:", {
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
-        //                 }
-
-        //                 console.log(
-        //                     "ALPS Postback Status:",
-        //                     response.status
-        //                 );
-
-        //                 console.log(
-        //                     "ALPS Postback Response:",
-        //                     response.data
-        //                 );
-
-        //             }
-
-        //             if (
-        //                 publisher === "MAHDEV"
-        //             ) {
-
-        //                 const postbackUrl =
-        //                     `http://ad.propellerads.com/conversion.php` +
-        //                     `?aid=3547731` +
-        //                     `&pid=` +
-        //                     `&tid=124405` +
-        //                     `&visitor_id=${encodeURIComponent(clickId)}`;
+                    //     console.log(
+                    //         "Postback URL:",
+                    //         postbackUrl
+                    //     );
 
 
-        //                 console.log(
-        //                     "=========================================="
-        //                 );
+                    //     const response =
+                    //         await axios.get(
+                    //             postbackUrl,
+                    //             {
+                    //                 timeout: 10000
+                    //             }
+                    //         );
 
-        //                 console.log(
-        //                     "ALPS POSTBACK"
-        //                 );
+                    //     if (response.status >= 200 && response.status < 300) {
+                    //         await publisherClick.update({
+                    //             pixels_fired: true,
+                    //             is_paid: chargeAmountNumber > 0
+                    //         });
 
-        //                 console.log(
-        //                     "Postback URL:",
-        //                     postbackUrl
-        //                 );
+                    //         console.log("PublisherClick updated:", {
+                    //             pixels_fired: true,
+                    //             is_paid: chargeAmountNumber > 0
+                    //         });
+                    //     }
 
+                    //     console.log(
+                    //         "ALPS Postback Status:",
+                    //         response.status
+                    //     );
 
-        //                 const response =
-        //                     await axios.get(
-        //                         postbackUrl,
-        //                         {
-        //                             timeout: 10000
-        //                         }
-        //                     );
+                    //     console.log(
+                    //         "ALPS Postback Response:",
+                    //         response.data
+                    //     );
 
-        //                 if (response.status >= 200 && response.status < 300) {
-        //                     await publisherClick.update({
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
+                    // }
 
-        //                     console.log("PublisherClick updated:", {
-        //                         pixels_fired: true,
-        //                         is_paid: chargeAmountNumber > 0
-        //                     });
-        //                 }
+                    // if (
+                    //     publisher === "MAHDEV"
+                    // ) {
 
-        //                 console.log(
-        //                     "ALPS Postback Status:",
-        //                     response.status
-        //                 );
-
-        //                 console.log(
-        //                     "ALPS Postback Response:",
-        //                     response.data
-        //                 );
-
-        //             }
+                    //     const postbackUrl =
+                    //         `http://ad.propellerads.com/conversion.php` +
+                    //         `?aid=3547731` +
+                    //         `&pid=` +
+                    //         `&tid=124405` +
+                    //         `&visitor_id=${encodeURIComponent(clickId)}`;
 
 
-        //         } else {
+                    //     console.log(
+                    //         "=========================================="
+                    //     );
 
-        //             console.log(
-        //                 "No publisher click found for ClientTransactionId:",
-        //                 clientTxnId
-        //             );
-        //         }
+                    //     console.log(
+                    //         "ALPS POSTBACK"
+                    //     );
 
-
-        //     } else {
-
-        //         console.log(
-        //             "ClientTransactionId is missing. Publisher postback skipped."
-        //         );
-        //     }
+                    //     console.log(
+                    //         "Postback URL:",
+                    //         postbackUrl
+                    //     );
 
 
-        // } catch (publisherError) {
+                    //     const response =
+                    //         await axios.get(
+                    //             postbackUrl,
+                    //             {
+                    //                 timeout: 10000
+                    //             }
+                    //         );
 
-        //     console.error(
-        //         "Publisher Postback Error:",
-        //         publisherError
-        //     );
+                    //     if (response.status >= 200 && response.status < 300) {
+                    //         await publisherClick.update({
+                    //             pixels_fired: true,
+                    //             is_paid: chargeAmountNumber > 0
+                    //         });
 
-        // }
+                    //         console.log("PublisherClick updated:", {
+                    //             pixels_fired: true,
+                    //             is_paid: chargeAmountNumber > 0
+                    //         });
+                    //     }
+
+                    //     console.log(
+                    //         "ALPS Postback Status:",
+                    //         response.status
+                    //     );
+
+                    //     console.log(
+                    //         "ALPS Postback Response:",
+                    //         response.data
+                    //     );
+
+                    // }
 
 
-        // // ============================================================
-        // // CREATE JWT AND REDIRECT USER
-        // // ============================================================
+                } 
+                else {
+
+                    console.log(
+                        "No publisher click found for ClientTransactionId:",
+                        clientTxnId
+                    );
+                }
+
+
+            } else {
+
+                console.log(
+                    "ClientTransactionId is missing. Publisher postback skipped."
+                );
+            }
+
+
+        } catch (publisherError) {
+
+            console.error(
+                "Publisher Postback Error:",
+                publisherError
+            );
+
+        }
+
 
         if (allowLogin) {
 
@@ -761,9 +666,6 @@ router.get("/redirect", async (req, res) => {
         }
 
 
-        // ============================================================
-        // SUBSCRIPTION FAILED / LOGIN NOT ALLOWED
-        // ============================================================
 
         return res.redirect(
 
