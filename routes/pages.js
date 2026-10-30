@@ -19,11 +19,10 @@ router.post("/user-login", async (req, res) => {
     const transactionID = Date.now();
 
     const consentUrl =
-        `https://cg.mtn.com.gh/Portal` +
+        `https://cgnp.mtn.com.gh/Portal` +
         `?OfferCode=${offerCode}` +
-        `&mobileNumber=${msisdn}` +
         `&redirectUrl=${redirectUrl}` +
-        `&transactionID=${transactionID}`;
+        `&mobileNumber=${msisdn}`;
 
     return res.json({
         status: true,

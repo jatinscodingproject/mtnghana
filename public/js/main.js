@@ -364,10 +364,6 @@
 
             return;
         }
-
-        // =====================================================
-        // 9. UNKNOWN RESPONSE
-        // =====================================================
         console.warn(
             "Unknown subscription response:",
             data
@@ -577,10 +573,6 @@
             "http://mobile.arenaxpro.com/redirect"
         );
 
-        // ---------------------------------------------
-        // Use transaction ID from backend if available
-        // Otherwise generate a new one
-        // ---------------------------------------------
 
         let transactionID = window.transactionId;
 
@@ -603,11 +595,10 @@
         if (window.isHE && window.msisdn) {
 
             consentUrl =
-                `http://102.133.198.92/Redirect` +
+                `http://20.238.64.101/Redirect` +
                 `?OfferCode=${encodeURIComponent(offerCode)}` +
-                `&mobileNumber=${encodeURIComponent(window.msisdn)}` +
                 `&redirectUrl=${redirectUrl}` +
-                `&transactionID=${encodeURIComponent(transactionID)}`;
+                `&mobileNumber=${encodeURIComponent(window.msisdn)}`;
 
             console.log("Consent URL:", consentUrl);
 
