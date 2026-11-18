@@ -30,6 +30,7 @@ router.post("/user-login", async (req, res) => {
   });
 });
 
+
 router.get("/redirect", async (req, res) => {
   try {
     const {
@@ -52,13 +53,22 @@ router.get("/redirect", async (req, res) => {
       null;
 
     const charge = ChargeAmount || chargeAmount || null;
+    const chargeAmountNumber = Number.parseFloat(charge);
+    const statusCode = String(status);
 
     let allowLogin = false;
     let message = "";
 
-    switch (String(status)) {
+    const successfulStatuses = ["200", "9", "115"];
+    const isSubscriptionSuccess = successfulStatuses.includes(statusCode);
+
+    // ==========================================
+    // SUBSCRIPTION STATUS
+    // ==========================================
+
+    switch (statusCode) {
       case "200":
-        console.log("I AM HERE");
+        console.log("Subscription successful");
         allowLogin = true;
         message = "Subscription successful.";
         break;
@@ -91,7 +101,7 @@ router.get("/redirect", async (req, res) => {
       case "55":
       case "63":
       case "111": {
-        console.log("Insufficient funds status:", status);
+        console.log("Insufficient funds status:", statusCode);
 
         if (!msisdn) {
           message = "Insufficient balance. Please recharge and try again.";
@@ -106,33 +116,30 @@ router.get("/redirect", async (req, res) => {
           order: [["createdAt", "DESC"]]
         });
 
-        console.log("Latest callback for insufficient funds:", latestCallback);
+        console.log(
+          "Latest callback for insufficient funds:",
+          latestCallback
+        );
 
         if (latestCallback) {
           const callbackTime = new Date(latestCallback.createdAt);
           const now = new Date();
+
           const sameDay =
             callbackTime.getFullYear() === now.getFullYear() &&
             callbackTime.getMonth() === now.getMonth() &&
             callbackTime.getDate() === now.getDate();
 
           const differenceMinutes =
-            Math.abs(now.getTime() - callbackTime.getTime()) / (1000 * 60);
-
-          console.log("Callback time:", callbackTime);
-          console.log("Difference:", differenceMinutes, "minutes");
-          console.log("Same day:", sameDay);
+            Math.abs(now.getTime() - callbackTime.getTime()) / 60000;
 
           if (sameDay && differenceMinutes <= 10) {
             allowLogin = true;
             console.log("Recent callback found. Allowing login.");
           } else {
             allowLogin = false;
-            console.log("Callback is missing or older than 10 minutes.");
+            console.log("Callback missing or older than 10 minutes.");
           }
-        } else {
-          allowLogin = false;
-          console.log("No callback found for MSISDN:", msisdn);
         }
 
         message = "Insufficient balance. Please recharge and try again.";
@@ -154,52 +161,154 @@ router.get("/redirect", async (req, res) => {
         break;
     }
 
+    // ==========================================
+    // PUBLISHER POSTBACK HANDLING
+    // ==========================================
+
     try {
-      const chargeAmountNumber = Number.parseFloat(charge);
+      let publisherClick = null;
 
-      if (!clientTxnId) {
-        console.log("ClientTransactionId is missing. Publisher postback skipped.");
-      } else {
-        console.log("Searching publisher_clicks using ClientTransactionId:", clientTxnId);
+      if (clientTxnId) {
+        console.log(
+          "Searching publisher_clicks using ClientTransactionId:",
+          clientTxnId
+        );
 
-        const publisherClick = await PublisherClick.findOne({
+        publisherClick = await PublisherClick.findOne({
           where: {
             transaction_id: String(clientTxnId)
           },
           order: [["created_at", "DESC"]]
         });
 
-        console.log("Publisher Click Found:", publisherClick);
+      } else if (msisdn) {
+        console.log(
+          "ClientTransactionId missing. Checking latest click for MSISDN:",
+          msisdn
+        );
 
-        if (!publisherClick) {
-          console.log("PublisherClick not found for ClientTransactionId:", clientTxnId);
-        } else {
-          if (transactionID) {
-            await mtnSubscriptionCallback.update(
-              {
-                publisher: publisherClick.publisher,
-                charge_amt: Number.isFinite(chargeAmountNumber) ? chargeAmountNumber : 0
-              },
-              {
-                where: {
-                  transaction_id: String(transactionID)
-                }
+        // Fallback for ClicksAd.
+        // IMPORTANT: PublisherClick must contain an msisdn column.
+        publisherClick = await PublisherClick.findOne({
+          where: {
+            publisher: "clicksad",
+            msisdn: String(msisdn)
+          },
+          order: [["created_at", "DESC"]]
+        });
+
+        if (publisherClick) {
+          console.log(
+            "Latest ClicksAd click found:",
+            publisherClick.click_id
+          );
+        }
+      } else {
+        console.log(
+          "ClientTransactionId and MSISDN missing. Postback skipped."
+        );
+      }
+
+      if (!publisherClick) {
+        console.log("PublisherClick record not found.");
+      } else {
+        const clickId = publisherClick.click_id;
+
+        const publisher = String(
+          publisherClick.publisher || ""
+        ).trim().toLowerCase();
+
+        console.log("Publisher:", publisher);
+        console.log("Click ID:", clickId);
+
+        // Update subscription callback with publisher details.
+        if (transactionID) {
+          await mtnSubscriptionCallback.update(
+            {
+              publisher: publisherClick.publisher,
+              charge_amt: Number.isFinite(chargeAmountNumber)
+                ? chargeAmountNumber
+                : 0
+            },
+            {
+              where: {
+                transaction_id: String(transactionID)
               }
+            }
+          );
+        }
+
+        // ------------------------------------------
+        // CLICKsAD POSTBACK
+        // ------------------------------------------
+
+        if (publisher === "clicksad") {
+
+          if (!isSubscriptionSuccess) {
+            console.log(
+              "ClicksAd postback skipped. Subscription not successful:",
+              statusCode
             );
+
+          } else if (!clickId) {
+            console.log("ClicksAd postback skipped: click_id missing.");
+
+          } else if (publisherClick.pixels_fired) {
+            console.log(
+              "ClicksAd postback already fired. Duplicate skipped:",
+              clickId
+            );
+
+          } else {
+            const postbackUrl =
+              "http://clixsad.adserverexchange.com/adsrv/postback/pixel" +
+              `?subid=${encodeURIComponent(String(clickId))}`;
+
+            console.log("==========================================");
+            console.log("CLICKsAD POSTBACK");
+            console.log("MSISDN:", msisdn);
+            console.log("Click ID:", clickId);
+            console.log("Postback URL:", postbackUrl);
+
+            const response = await axios.get(postbackUrl, {
+              timeout: 15000
+            });
+
+            if (response.status >= 200 && response.status < 300) {
+              await publisherClick.update({
+                pixels_fired: true,
+                is_paid:
+                  Number.isFinite(chargeAmountNumber) &&
+                  chargeAmountNumber > 0
+              });
+
+              console.log("✅ CLICKsAD POSTBACK SUCCESS");
+              console.log("HTTP Status:", response.status);
+              console.log("Response:", response.data);
+            } else {
+              console.log(
+                "❌ CLICKsAD POSTBACK FAILED:",
+                response.status
+              );
+            }
           }
 
-          const clickId = publisherClick.click_id;
-          const publisher = String(publisherClick.publisher || "").trim().toLowerCase();
+        // ------------------------------------------
+        // XO MEDIAXO TRACKIER POSTBACK
+        // ------------------------------------------
 
-          console.log("Publisher:", publisher);
-          console.log("Publisher click ID:", clickId);
+        } else if (publisher === "xo") {
 
-          if (publisher !== "xo") {
-            console.log(`Publisher ${publisher || "(empty)"} is disabled. Only XO postback is active.`);
-          } else if (!clickId) {
-            console.log("XO postback skipped: click_id is missing.");
-          } else if (!Number.isFinite(chargeAmountNumber) || chargeAmountNumber < 0) {
-            console.log("XO postback skipped: ChargeAmount is missing or invalid.", charge);
+          if (!clickId) {
+            console.log("XO postback skipped: click_id missing.");
+
+          } else if (!Number.isFinite(chargeAmountNumber) ||
+                     chargeAmountNumber < 0) {
+            console.log(
+              "XO postback skipped: invalid ChargeAmount:",
+              charge
+            );
+
           } else {
             const postbackUrl =
               "https://mediaxo.trackier.co/acquisition" +
@@ -209,7 +318,6 @@ router.get("/redirect", async (req, res) => {
             console.log("==========================================");
             console.log("XO MEDIAXO TRACKIER POSTBACK");
             console.log("Click ID:", clickId);
-            console.log("Postback URL:", postbackUrl);
 
             const response = await axios.get(postbackUrl, {
               timeout: 10000
@@ -225,8 +333,14 @@ router.get("/redirect", async (req, res) => {
             console.log("XO Postback Status:", response.status);
             console.log("XO Postback Response:", response.data);
           }
+
+        } else {
+          console.log(
+            `Publisher ${publisher || "(empty)"} is disabled.`
+          );
         }
       }
+
     } catch (publisherError) {
       console.error("Publisher Postback Error:", {
         message: publisherError.message,
@@ -234,6 +348,10 @@ router.get("/redirect", async (req, res) => {
         response: publisherError.response?.data || null
       });
     }
+
+    // ==========================================
+    // REDIRECT
+    // ==========================================
 
     if (allowLogin) {
       const token = jwt.sign(
@@ -248,27 +366,30 @@ router.get("/redirect", async (req, res) => {
         }
       );
 
-      console.log("Generated Token:", token);
-
       return res.redirect(
-        `https://mobile.arenaxpro.com` +
-          `?token=${encodeURIComponent(token)}` +
-          `&msisdn=${encodeURIComponent(msisdn || "")}`
+        "https://mobile.arenaxpro.com" +
+        `?token=${encodeURIComponent(token)}` +
+        `&msisdn=${encodeURIComponent(msisdn || "")}`
       );
     }
 
     return res.redirect(
-      `https://mobile.arenaxpro.com` +
-        `?error=${encodeURIComponent(message)}`
+      "https://mobile.arenaxpro.com" +
+      `?error=${encodeURIComponent(message)}`
     );
+
   } catch (error) {
     console.error("Redirect Error:", error);
+
     return res.redirect(
-      `https://mobile.arenaxpro.com` +
-        `?error=${encodeURIComponent("Something went wrong. Please try again.")}`
+      "https://mobile.arenaxpro.com" +
+      `?error=${encodeURIComponent(
+        "Something went wrong. Please try again."
+      )}`
     );
   }
 });
+
 
 router.post("/notify-callback", async (req, res) => {
   try {
